@@ -1057,17 +1057,9 @@ function closeConfirm(){document.getElementById('confirm-modal').classList.remov
 
 // ── STATE ──
 var FH='', CL='', CUR='USD', THB_RATE=36, isDark=true, sortM='def', portSortM='val', portSortAsc=false;
-var tickers=["GOOG","AMZN","NVDA","QQQ","VOO","SOFI","PLTR","MSFT","AAPL","META","BTC"];
-var _defaultTickers=['GOOG','AMZN','NVDA','QQQ','VOO','SOFI','PLTR','MSFT','AAPL','META'];
-var pinned=new Set(), sd={}, hd={}, positions=[
-  {sym:'GOOG', qty:0.89435, cost:312.18},
-  {sym:'AMZN', qty:0.71525, cost:209.72},
-  {sym:'NVDA', qty:0.61652, cost:180.23},
-  {sym:'QQQ',  qty:0.18326, cost:620.72},
-  {sym:'VOO',  qty:0.35493, cost:667.21},
-  {sym:'SOFI', qty:9.79701, cost:15.63},
-  {sym:'PLTR', qty:0.53768, cost:161.73},
-], alerts=[], cdv=60, tmr=null, curSym='';
+var tickers=[];
+var _defaultTickers=[];
+var pinned=new Set(), sd={}, hd={}, positions=[], alerts=[], cdv=60, tmr=null, curSym='';
 
 var LOGOS={
   NVDA:'https://assets.parqet.com/logos/symbol/NVDA',
