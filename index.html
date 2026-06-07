@@ -96,7 +96,8 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .wgrid.glist .pmeta,.wgrid.glist .spark,.wgrid.glist .ohlc{display:none;}
 @media(max-width:600px){.wgrid.gsq{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;transition:all .2s;cursor:pointer;aspect-ratio:1/1;display:flex;flex-direction:column;justify-content:space-between;}
-.card:hover{border-color:var(--border2);box-shadow:0 4px 16px rgba(0,0,0,.3);transform:translateY(-1px)}
+.card:hover{border-color:var(--border2);box-shadow:0 8px 28px rgba(0,0,0,.35);transform:translateY(-2px)}
+.card{transform-style:preserve-3d;will-change:transform;}
 .wgrid.glist .card{aspect-ratio:unset;flex-direction:row;justify-content:flex-start;align-items:center;}
 .ch{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}.csym{
   display:flex;
@@ -214,6 +215,31 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 @keyframes flashDn{0%{background:var(--rbg)}100%{background:transparent}}
 .flash-up{animation:flashUp .7s ease-out;}
 .flash-dn{animation:flashDn .7s ease-out;}
+
+/* ── ENHANCED ANIMATIONS ── */
+/* Price countup highlight */
+@keyframes priceCountUp{0%{opacity:.4;transform:translateY(4px)}100%{opacity:1;transform:translateY(0)}}
+.price-updated{animation:priceCountUp .4s ease-out;}
+
+/* Sparkline draw-on */
+@keyframes drawLine{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+.spark polyline{stroke-dasharray:1;stroke-dashoffset:1;animation:drawLine 1s ease-out forwards;}
+.spark polygon{opacity:0;animation:fadeIn .8s ease .4s forwards;}
+@keyframes fadeIn{to{opacity:1}}
+
+/* Badge pulse on update */
+@keyframes badgePulse{0%{transform:scale(1)}40%{transform:scale(1.25)}70%{transform:scale(.95)}100%{transform:scale(1)}}
+.chg-pulse{animation:badgePulse .5s ease-out;}
+
+/* Number ticker countup */
+@keyframes numTick{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:translateY(0)}}
+.num-tick{animation:numTick .35s ease-out;}
+
+/* Glow border on card when price rises */
+@keyframes glowUp{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}60%{box-shadow:0 0 0 5px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+@keyframes glowDn{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}60%{box-shadow:0 0 0 5px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.glow-up{animation:glowUp .8s ease-out;}
+.glow-dn{animation:glowDn .8s ease-out;}
 .earn-name{font-size:11px;color:var(--text2);}
 .earn-date{font-size:12px;color:var(--text2);margin-top:3px;}
 .earn-est{font-size:11px;color:var(--text3);margin-top:2px;}
@@ -324,9 +350,71 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 .dca-plan-sym{font-size:12px;font-weight:700;margin-bottom:4px;}
 .dca-plan-amount{font-size:20px;font-weight:700;color:var(--green);margin:4px 0;}
 .dca-plan-body{font-size:11px;color:var(--text2);line-height:1.6;}
+
+/* ── SKELETON LOADING ── */
+@keyframes skshimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.sk{
+  background:linear-gradient(105deg,
+    var(--bg3) 0%,
+    var(--bg3) 20%,
+    var(--bg4) 38%,
+    rgba(99,102,241,.13) 48%,
+    rgba(139,92,246,.10) 52%,
+    var(--bg4) 62%,
+    var(--bg3) 80%,
+    var(--bg3) 100%
+  );
+  background-size:300% 100%;
+  animation:skshimmer 1.8s infinite linear;
+  border-radius:5px;
+}
+[data-theme="light"] .sk{
+  background:linear-gradient(105deg,
+    #edf0f5 0%,
+    #edf0f5 20%,
+    #f5f7fa 38%,
+    rgba(99,102,241,.10) 48%,
+    rgba(139,92,246,.07) 52%,
+    #f5f7fa 62%,
+    #edf0f5 80%,
+    #edf0f5 100%
+  );
+  background-size:300% 100%;
+}
+
+/* ── PROGRESS BAR ── */
+#fetch-progress{
+  position:fixed;top:0;left:0;right:0;height:3px;z-index:9999;
+  pointer-events:none;opacity:0;transition:opacity .2s;
+}
+#fetch-progress.active{opacity:1;}
+#fetch-progress-bar{
+  height:100%;width:0%;
+  background:linear-gradient(90deg,#6366f1,#8b5cf6,#06b6d4,#6366f1);
+  background-size:200% 100%;
+  border-radius:0 3px 3px 0;
+  transition:width .3s ease;
+  animation:progressShine 1.2s linear infinite;
+}
+@keyframes progressShine{0%{background-position:100% 0}100%{background-position:-100% 0}}
+#fetch-progress-glow{
+  position:absolute;right:0;top:-2px;
+  width:80px;height:7px;
+  background:radial-gradient(ellipse at right,rgba(139,92,246,.8) 0%,transparent 70%);
+  pointer-events:none;
+}
+.card.skel{pointer-events:none;cursor:default;}
+.card.skel:hover{transform:none;box-shadow:none;border-color:var(--border);}
+
+/* ── DEMO STATUS BAR ── */
+
+/* Card entry animation */
+@keyframes cardIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.card.animating{animation:cardIn .35s ease both;}
 </style>
 <script type="text/javascript" src="chrome-extension://aggiiclaiamajehmlfpkjmlbadmkledi/popup.js" async=""></script><script type="text/javascript" src="chrome-extension://aggiiclaiamajehmlfpkjmlbadmkledi/tat_popup.js" async=""></script></head>
 <body>
+<div id="fetch-progress"><div id="fetch-progress-bar"></div><div id="fetch-progress-glow"></div></div>
 
 <!-- SETUP -->
 <div id="setup" style="display: none;">
@@ -1127,7 +1215,20 @@ function go(){
   FH=fk; CL=ck;
   localStorage.setItem('fhk4',fk);
   if(ck)localStorage.setItem('clk4',ck);
-  startApp();
+  // Animate button → fade setup → launch
+  var gbtn=document.querySelector('#setup .btn[onclick="go()"]');
+  if(gbtn){
+    gbtn.textContent='กำลังเข้าสู่ระบบ…';
+    gbtn.disabled=true;
+    gbtn.style.transition='opacity .3s';
+  }
+  var setup=document.getElementById('setup');
+  if(setup){
+    setup.style.transition='opacity .45s ease, transform .45s ease';
+    setup.style.opacity='0';
+    setup.style.transform='scale(.97)';
+  }
+  setTimeout(function(){ startApp(); }, 480);
 }
 
 function startApp(){
@@ -1136,7 +1237,17 @@ function startApp(){
   document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
   document.getElementById('tbtn').textContent=isDark?'🌙':'☀️';
   document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='block';
+  var appEl=document.getElementById('app');
+  appEl.style.opacity='0';
+  appEl.style.transform='translateY(10px)';
+  appEl.style.display='block';
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      appEl.style.transition='opacity .5s ease, transform .5s ease';
+      appEl.style.opacity='1';
+      appEl.style.transform='translateY(0)';
+    });
+  });
   if(CL){
     var ids=['ai-badge','ai-stock-btn','ai-buy-btn','ai-exit-btn','ai-port-btn'];
     for(var i=0;i<ids.length;i++){
@@ -1144,6 +1255,8 @@ function startApp(){
       if(el)el.style.display='flex';
     }
   }
+  // ── Show skeleton immediately on boot ──
+  showBootSkeleton();
   renderPort();renderAlerts();updateAlBadge();populateNewsSel();populateTVSel();
   fetchTHB();
   // Init WebSocket if was on
@@ -1153,6 +1266,16 @@ function startApp(){
   } else {
     wsUpdateBadge('off');
   }
+}
+
+function showBootSkeleton(){
+  var grid=document.getElementById('wgrid');
+  if(!grid)return;
+  _skelShowTime=Date.now();
+  var count=Math.max(tickers.length,6);
+  var html='';
+  for(var i=0;i<count;i++) html+=skeletonCardHTML();
+  grid.innerHTML=html;
 }
 
 // ═══════════════════════════════════════════════
@@ -1316,6 +1439,10 @@ function toggleTheme(){
 }
 
 // ── CURRENCY ──
+// minimum ms skeleton stays visible before cards animate in
+var SKEL_MIN_MS = 2200;
+var _skelShowTime = 0;
+
 function fetchTHB(){
   var cached=localStorage.getItem('thb_rate');
   if(cached)THB_RATE=parseFloat(cached);
@@ -1325,13 +1452,19 @@ function fetchTHB(){
       THB_RATE=d.rates&&d.rates.THB?d.rates.THB:(THB_RATE||36);
       localStorage.setItem('thb_rate',THB_RATE);
       updateThbBadge();
-      fetchAll();
+      fetchAllDelayed();
     })
     .catch(function(){
       THB_RATE=THB_RATE||36;
       updateThbBadge();
-      fetchAll();
+      fetchAllDelayed();
     });
+}
+
+function fetchAllDelayed(){
+  var elapsed=Date.now()-_skelShowTime;
+  var wait=Math.max(0, SKEL_MIN_MS-elapsed);
+  setTimeout(fetchAll, wait);
 }
 function updateThbBadge(){
   var el=document.getElementById('thb-rate-badge');
@@ -1455,6 +1588,33 @@ function fetchCryptoHistory(sym){
     .catch(function(){});
 }
 
+// ── PROGRESS BAR HELPERS ──
+function progressStart(){
+  var bar=document.getElementById('fetch-progress');
+  var fill=document.getElementById('fetch-progress-bar');
+  if(!bar||!fill)return;
+  bar.classList.add('active');
+  fill.style.transition='none';
+  fill.style.width='0%';
+  // quick burst to ~30% then slow crawl
+  requestAnimationFrame(function(){
+    fill.style.transition='width .4s ease';
+    fill.style.width='30%';
+    setTimeout(function(){fill.style.transition='width 4s ease-out';fill.style.width='80%';},450);
+  });
+}
+function progressDone(){
+  var bar=document.getElementById('fetch-progress');
+  var fill=document.getElementById('fetch-progress-bar');
+  if(!bar||!fill)return;
+  fill.style.transition='width .25s ease';
+  fill.style.width='100%';
+  setTimeout(function(){
+    bar.classList.remove('active');
+    setTimeout(function(){fill.style.transition='none';fill.style.width='0%';},220);
+  },300);
+}
+
 function fetchAll(){
   clearInterval(tmr);
   tmr = null;
@@ -1467,6 +1627,7 @@ function fetchAll(){
 
   document.getElementById('stxt').textContent = 'กำลังอัปเดต...';
 
+  progressStart();
   renderWatch();
 
   // รวม symbols จาก portfolio ที่ไม่อยู่ใน watchlist
@@ -1508,9 +1669,18 @@ function fetchAll(){
       var oldPrice=parseFloat(prevPrices[sym]);
       var newPrice=d.price;
       if(!oldPrice||oldPrice===newPrice)return;
-      var cls=newPrice>oldPrice?'flash-up':'flash-dn';
+      var isUp=newPrice>oldPrice;
+      var cls=isUp?'flash-up':'flash-dn';
+      var glowCls=isUp?'glow-up':'glow-dn';
       card.classList.add(cls);
-      setTimeout(function(){card.classList.remove(cls);},700);
+      card.classList.add(glowCls);
+      // Pulse the badge
+      var badge=card.querySelector('.chg');
+      if(badge){badge.classList.remove('chg-pulse');void badge.offsetWidth;badge.classList.add('chg-pulse');}
+      // Countup on price
+      var priceEl=card.querySelector('.pbig');
+      if(priceEl){priceEl.classList.remove('price-updated');void priceEl.offsetWidth;priceEl.classList.add('price-updated');}
+      setTimeout(function(){card.classList.remove(cls);card.classList.remove(glowCls);},800);
     });
 
     var now = new Date();
@@ -1536,6 +1706,7 @@ function fetchAll(){
 
     rb.disabled = false;
     rb.textContent = '⟳';
+    progressDone();
 
     document.getElementById('cd').textContent = cdv + 's';
 
@@ -1554,7 +1725,40 @@ function fetchAll(){
 // ── SPARKLINE ──
 function spark(sym){
   var pts=(hd[sym]||[]).filter(function(v){return v!=null;});
-  if(pts.length<2)return'<svg class="spark"></svg>';
+  // ถ้าไม่มี history ให้สร้าง sparkline สมมติจาก OHLC + % change
+  if(pts.length<2){
+    var d=sd[sym];
+    if(!d||d.err||d.price==null)return'<svg class="spark"></svg>';
+    pts=sparkFallback(d);
+    if(pts.length<2)return'<svg class="spark"></svg>';
+  }
+  return sparkSVG(pts);
+}
+
+// สร้างจุดสมมติที่สอดคล้องกับ O, H, L, C และทิศทาง %change
+function sparkFallback(d){
+  var N=20;
+  var open=d.open||d.prev||d.price;
+  var close=d.price;
+  var high=d.high||Math.max(open,close)*1.005;
+  var low=d.low||Math.min(open,close)*0.995;
+  var up=close>=open;
+  var pts=[open];
+  // random walk จาก open → close, ไม่เกิน high/low
+  var rng=high-low||close*0.01;
+  for(var i=1;i<N-1;i++){
+    var prev=pts[i-1];
+    var bias=(close-prev)/(N-i)*1.5; // bias toward close
+    var step=bias+(Math.random()-0.5)*rng*0.18;
+    var v=prev+step;
+    v=Math.max(low,Math.min(high,v));
+    pts.push(v);
+  }
+  pts.push(close);
+  return pts;
+}
+
+function sparkSVG(pts){
   var mn=Math.min.apply(null,pts),mx=Math.max.apply(null,pts),rng=mx-mn||1;
   var W=200,H=32,px=2,py=3;
   var xy=pts.map(function(v,i){
@@ -1660,8 +1864,30 @@ function renderWatch(){
   else if(sortM==='price')list.sort(function(a,b){return((sd[b]&&sd[b].price)||0)-((sd[a]&&sd[a].price)||0);});
   list.sort(function(a,b){return(pinned.has(b)?1:0)-(pinned.has(a)?1:0);});
   var grid=document.getElementById('wgrid');
+  var wasSkeleton=grid.querySelector&&grid.querySelector('.card.skel')!=null;
   grid.className='wgrid '+curLayout;
   grid.innerHTML=list.map(cardH).join('');
+  if(wasSkeleton){
+    var cards=grid.querySelectorAll('.card');
+    cards.forEach(function(c,i){
+      c.style.opacity='0';
+      c.style.transform='translateY(14px)';
+      var sym=c.dataset?c.dataset.sym:null;
+      var price=sym&&sd[sym]?sd[sym].price:null;
+      setTimeout(function(){
+        c.style.transition='opacity .35s ease, transform .35s ease';
+        c.style.opacity='1';
+        c.style.transform='translateY(0)';
+        // countup price after card slides in
+        if(price)animatePriceCountUp(c, price, 600);
+      }, i*70);
+    });
+    // draw sparklines after cards appear
+    setTimeout(triggerSparkDrawOn, 200);
+  } else {
+    // still retrigger sparkline draw-on for fresh renders
+    setTimeout(triggerSparkDrawOn, 50);
+  }
 }
 function quickAdd(sym){
   if(tickers.indexOf(sym)>=0){toast(sym+' มีอยู่แล้ว','info');return;}
@@ -4679,6 +4905,100 @@ document.addEventListener('visibilitychange', function(){
   }
 });
 });
+
+// ── 3D TILT + SPARKLINE DRAW-ON + NUMBER COUNTUP ──
+
+// 3D tilt on mouse move
+document.addEventListener('mousemove', function(e){
+  var card = e.target.closest('.card:not(.skel)');
+  if(!card){
+    // reset all tilted cards
+    document.querySelectorAll('.card.tilting').forEach(function(c){
+      c.style.transform='';
+      c.classList.remove('tilting');
+    });
+    return;
+  }
+  var rect=card.getBoundingClientRect();
+  var cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  var dx=(e.clientX-cx)/rect.width, dy=(e.clientY-cy)/rect.height;
+  var rotX=(-dy*10).toFixed(2), rotY=(dx*10).toFixed(2);
+  card.style.transform='perspective(600px) rotateX('+rotX+'deg) rotateY('+rotY+'deg) translateY(-3px)';
+  card.style.transition='transform .05s linear';
+  card.classList.add('tilting');
+  // reset siblings
+  document.querySelectorAll('.card.tilting').forEach(function(c){
+    if(c!==card){c.style.transform='';c.classList.remove('tilting');}
+  });
+});
+document.addEventListener('mouseleave', function(){
+  document.querySelectorAll('.card.tilting').forEach(function(c){
+    c.style.transform='';c.style.transition='transform .3s ease';c.classList.remove('tilting');
+  });
+});
+
+// Animated number countup on spark polyline (retriggered each render)
+function triggerSparkDrawOn(){
+  document.querySelectorAll('.spark polyline').forEach(function(line){
+    var len=line.getTotalLength?line.getTotalLength():300;
+    line.style.strokeDasharray=len;
+    line.style.strokeDashoffset=len;
+    line.style.animation='none';
+    void line.offsetWidth;
+    line.style.animation='drawLine 1s ease-out forwards';
+  });
+  document.querySelectorAll('.spark polygon').forEach(function(p){
+    p.style.opacity='0';
+    p.style.animation='none';
+    void p.offsetWidth;
+    p.style.animation='fadeIn .8s ease .4s forwards';
+  });
+}
+
+// Number countup for price when first rendered
+function animatePriceCountUp(card, targetPrice, duration){
+  var el=card.querySelector('.pbig');
+  if(!el)return;
+  var start=targetPrice*0.97;
+  var startTime=null;
+  var sym=card.dataset.sym;
+  var d=sd[sym];
+  function step(ts){
+    if(!startTime)startTime=ts;
+    var p=Math.min((ts-startTime)/duration,1);
+    var ease=1-Math.pow(1-p,3);
+    var v=start+(targetPrice-start)*ease;
+    el.textContent=(d&&d.cur==='JPY'?'¥':'$')+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ── SKELETON DEMO ──
+function skeletonCardHTML(){
+  return '<div class="card skel">'
+    +'<div class="ch">'
+    +'<div class="csym">'
+    +'<div class="cdot sk" style="background:none"></div>'
+    +'<div><div class="sk" style="width:44px;height:12px;margin-bottom:5px"></div>'
+    +'<div class="sk" style="width:70px;height:9px"></div></div>'
+    +'</div>'
+    +'<div class="cr"><div class="sk" style="width:52px;height:18px;border-radius:20px"></div></div>'
+    +'</div>'
+    +'<div class="sk" style="width:80px;height:20px;margin:8px 0 4px"></div>'
+    +'<div class="sk" style="width:58px;height:9px;margin-bottom:10px"></div>'
+    +'<div class="sk" style="width:100%;height:26px;margin-bottom:8px"></div>'
+    +'<div class="ohlc">'
+    +'<div class="oi"><div class="sk" style="width:10px;height:9px"></div><div class="sk" style="width:38px;height:9px"></div></div>'
+    +'<div class="oi"><div class="sk" style="width:10px;height:9px"></div><div class="sk" style="width:38px;height:9px"></div></div>'
+    +'<div class="oi"><div class="sk" style="width:10px;height:9px"></div><div class="sk" style="width:38px;height:9px"></div></div>'
+    +'<div class="oi"><div class="sk" style="width:20px;height:9px"></div><div class="sk" style="width:30px;height:9px"></div></div>'
+    +'</div></div>';
+}
+
+
+
+
 </script>
 
 
