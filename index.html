@@ -74,6 +74,12 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 
 main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .sec{display:none}
 .sec.active{display:block}
+.sec.tab-anim{animation:secIn .18s ease}
+@keyframes secIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+#ptr-indicator{position:fixed;top:0;left:50%;transform:translateX(-50%) translateY(-60px);background:var(--acc);color:#fff;border-radius:0 0 20px 20px;padding:6px 18px 8px;font-size:12px;font-weight:600;z-index:300;transition:transform .25s ease;pointer-events:none;display:flex;align-items:center;gap:6px;}
+#ptr-indicator.ptr-visible{transform:translateX(-50%) translateY(0)}
+#ptr-indicator.ptr-loading .ptr-arrow{animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 /* STATBAR / TOOLBAR */
 .statbar{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text2);margin-bottom:14px;flex-wrap:wrap;gap:6px}
@@ -82,6 +88,11 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .syin{flex:1;min-width:140px;max-width:200px;background:var(--bg2);border:1px solid var(--border2);color:var(--text);font-size:13px;padding:7px 12px;border-radius:7px;outline:none;text-transform:uppercase}
 .syin:focus{border-color:var(--acc)}
 .syin::placeholder{color:var(--text3);text-transform:none}
+#watch-filter{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 12px 7px 30px;font-size:13px;color:var(--text);outline:none;width:160px;transition:width .2s,border-color .15s;}
+#watch-filter:focus{width:210px;border-color:var(--acc);}
+#watch-filter::placeholder{color:var(--text3)}
+.filter-wrap{position:relative;display:inline-flex;align-items:center}
+.filter-wrap::before{content:'🔍';position:absolute;left:8px;font-size:11px;pointer-events:none}
 
 /* CARDS */
 .layout-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
@@ -176,8 +187,13 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .ntime{font-size:10px;color:var(--text3);margin-top:5px}
 
 /* MODAL */
-.mov{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
-.mov.open{display:flex}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,0);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;pointer-events:none;transition:background .22s ease}
+.mov.open{background:rgba(0,0,0,.72);pointer-events:all}
+.mov .modal{opacity:0;transform:translateY(18px) scale(.97);transition:opacity .22s ease,transform .22s ease}
+.mov.open .modal{opacity:1;transform:translateY(0) scale(1)}
+@keyframes modalOut{to{opacity:0;transform:translateY(12px) scale(.97)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+.card-new{animation:cardIn .32s cubic-bezier(.22,.68,0,1.2) forwards}
 .modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:24px;width:100%;max-width:760px;box-shadow:var(--shadow);max-height:88vh;overflow-y:auto}
 .mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .mtitle{font-size:16px;font-weight:700}
@@ -195,6 +211,8 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 
 /* HEATMAP */
 .hmap{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:16px}
+@keyframes hmapPulse{0%{filter:brightness(1)}40%{filter:brightness(1.5)}100%{filter:brightness(1)}}
+.hmap-pulse{animation:hmapPulse .6s ease}
 .hcell{border-radius:9px;padding:12px 8px;text-align:center;cursor:pointer;transition:transform .15s}
 .hcell:hover{transform:scale(1.04)}
 .hcell-s{font-size:13px;font-weight:700;color:#fff}
@@ -265,7 +283,8 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .mobnav-btn.active .icon{transform:scale(1.15);}
 @media(max-width:700px){
   .mobnav{display:flex;}
-  body{padding-bottom:64px;}
+  body{padding-bottom:calc(68px + env(safe-area-inset-bottom));}
+  main{padding-bottom:8px;}
   .tabs{display:none;}
 }
 
@@ -481,6 +500,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
     <button class="tab" onclick="showTab('dca',this)">💹 DCA</button>
   </div>
   <!-- MOBILE BOTTOM NAV -->
+  <div id="ptr-indicator"><span class="ptr-arrow">↓</span><span id="ptr-text">ดึงเพื่อรีเฟรช</span></div>
   <nav class="mobnav" id="mobnav">
     <button class="mobnav-btn active" onclick="showTab('watch',null);setMobNav(this)"><span class="icon">📊</span>Watch</button>
     <button class="mobnav-btn" onclick="showTab('port',null);setMobNav(this)"><span class="icon">💼</span>Port</button>
@@ -497,6 +517,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
       <div class="toolbar">
         <input class="syin" id="syin" placeholder="Ticker เช่น GLD, BTC" maxlength="20" onkeydown="if(event.key==='Enter')addTick()">
         <button class="btn ba" onclick="addTick()">+ Add</button>
+        <div class="filter-wrap"><input id="watch-filter" placeholder="กรอง..." oninput="filterWatch(this.value)" autocomplete="off" spellcheck="false"></div>
         <button class="btn" onclick="srt('chg')">⬇ %Chg</button>
         <button class="btn" onclick="srt('price')">⬇ Price</button>
         <button class="btn" onclick="srt('def')">↺</button>
@@ -1126,7 +1147,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
     <div style="font-size:13px;color:var(--text2);margin-bottom:20px" id="confirm-msg"></div>
     <div style="display:flex;gap:8px;justify-content:flex-end">
       <button class="btn" onclick="closeConfirm()">ยกเลิก</button>
-      <button class="btn" style="background:var(--rbg);color:var(--red);border-color:var(--rbd)" id="confirm-ok">ลบ</button>
+      <button class="btn" style="background:var(--rbg);color:var(--red);border-color:var(--rbd)" id="confirm-ok" onclick="var _cb=_confirmCb;_confirmCb=null;closeConfirm();if(_cb)setTimeout(_cb,200);">ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -1135,19 +1156,29 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 // ── CONFIRM DIALOG ──
 var _confirmCb=null;
 function showConfirm(icon,title,msg,cb){
+  // ถ้ามี confirm ค้างอยู่ ให้ปิดก่อน
+  document.getElementById('confirm-modal').classList.remove('open');
+  _confirmCb=cb;
   document.getElementById('confirm-icon').textContent=icon;
   document.getElementById('confirm-title').textContent=title;
   document.getElementById('confirm-msg').textContent=msg;
-  document.getElementById('confirm-ok').onclick=function(){cb();closeConfirm();};
   document.getElementById('confirm-modal').classList.add('open');
 }
-function closeConfirm(){document.getElementById('confirm-modal').classList.remove('open');}
+function closeConfirm(){
+  var mov=document.getElementById('confirm-modal');
+  var inner=mov.querySelector('.modal');
+  if(inner){inner.style.animation='modalOut .18s ease forwards';}
+  mov.style.transition='background .18s ease';
+  mov.style.background='rgba(0,0,0,0)';
+  setTimeout(function(){mov.classList.remove('open');if(inner)inner.style.animation='';mov.style.background='';},190);
+}
 
 // ── STATE ──
 var FH='', CL='', CUR='USD', THB_RATE=36, isDark=true, sortM='def', portSortM='val', portSortAsc=false;
 var tickers=[];
 var _defaultTickers=[];
 var pinned=new Set(), sd={}, hd={}, positions=[], alerts=[], cdv=60, tmr=null, curSym='';
+var _seenCards={}, _prevPrices={}, _sparkCache={}, _prevHeatPrices={};
 
 var LOGOS={
   NVDA:'https://assets.parqet.com/logos/symbol/NVDA',
@@ -1257,6 +1288,12 @@ function startApp(){
   }
   // ── Show skeleton immediately on boot ──
   showBootSkeleton();
+  // force watchlist เป็น default tab ทุกครั้ง
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('sec-watch').classList.add('active');
+  var wTab=document.querySelector('.tab[onclick*="\'watch\'"]');
+  if(wTab)wTab.classList.add('active');
   renderPort();renderAlerts();updateAlBadge();populateNewsSel();populateTVSel();
   fetchTHB();
   // Init WebSocket if was on
@@ -1492,15 +1529,18 @@ function fd(p){
 // ── TABS ──
 function showTab(t,el){
   document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
-  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active');});
-  document.getElementById('sec-'+t).classList.add('active');
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active','tab-anim');});
+  var sec=document.getElementById('sec-'+t);
+  sec.classList.add('active');
+  void sec.offsetWidth; // reflow
+  sec.classList.add('tab-anim');
   if(el)el.classList.add('active');
   if(t==='port')renderPort();
   if(t==='heat')renderHeat();
   if(t==='alerts')renderAlerts();
   if(t==='news'){populateNewsSel();loadNews();}
   if(t==='alloc')renderAlloc();
-  if(t==='tv'){populateTVSel();loadTV();}
+  if(t==='tv'){if(document.getElementById('tv-sym')){populateTVSel();loadTV();}}
   if(t==='earnings')loadEarnings();
   if(t==='tax'){calcTax();calcDiv();}
 }
@@ -1511,8 +1551,12 @@ function fetchOne(sym){
   return fetch('https://finnhub.io/api/v1/quote?symbol='+sym+'&token='+FH)
     .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
     .then(function(q){
-      if(!q||q.c===0)throw new Error('ไม่พบข้อมูล');
-      sd[sym]={price:q.c,open:q.o,high:q.h,low:q.l,prev:q.pc,chg:q.d,chgP:q.dp,vol:q.v||0};
+      if(!q||(q.c===0&&q.pc===0))throw new Error('ไม่พบข้อมูล');
+      // q.c===0 = ตลาดปิด/pre-market → ใช้ราคาปิดล่าสุด (q.pc) แทน
+      var price=q.c||q.pc;
+      var isClosed=(q.c===0);
+      sd[sym]={price:price,open:isClosed?q.pc:q.o,high:isClosed?q.pc:q.h,low:isClosed?q.pc:q.l,
+        prev:q.pc,chg:isClosed?0:q.d,chgP:isClosed?0:q.dp,vol:q.v||0,closed:isClosed};
     })
     .catch(function(e){sd[sym]={err:e.message};});
 }
@@ -1729,8 +1773,15 @@ function spark(sym){
   if(pts.length<2){
     var d=sd[sym];
     if(!d||d.err||d.price==null)return'<svg class="spark"></svg>';
-    pts=sparkFallback(d);
-    if(pts.length<2)return'<svg class="spark"></svg>';
+    // cache fallback ไว้ใน hd เพื่อไม่ให้ random ใหม่ทุกครั้ง
+    if(!_sparkCache) _sparkCache={};
+    var cacheKey=sym+'_'+d.price+'_'+(d.open||'')+'_'+(d.high||'')+'_'+(d.low||'');
+    if(!_sparkCache[cacheKey]){
+      var fb=sparkFallback(d);
+      if(fb.length<2)return'<svg class="spark"></svg>';
+      _sparkCache[cacheKey]=fb;
+    }
+    pts=_sparkCache[cacheKey];
   }
   return sparkSVG(pts);
 }
@@ -1818,7 +1869,7 @@ function cardH(sym){
       +'<div style="font-size:10px;color:var(--text2)">'+thbStr.replace(' · ','')+'</div>'
       +'</div>'
       +'<div style="text-align:right;min-width:90px">'
-      +'<span class="chg '+ch.cl+'">'+ch.t+'</span>'
+      +'<span class="chg '+ch.cl+'">'+ch.t+'</span>'+(d.closed?' <span style="font-size:9px;opacity:.5">ปิด</span>':'')+(d.closed?' <span style="font-size:9px;opacity:.5">ปิด</span>':'')
       +'</div>'
       +'<button class="rmbtn" style="color:'+(pinned.has(sym)?'#f59e0b':'#6b7280')+';opacity:'+(pinned.has(sym)?'1':'0.35')+';font-size:13px" title="ปักหมุด" onclick="event.stopPropagation();togglePin(\''+sym+'\')">📌</button>'
       +'<button class="rmbtn" onclick="event.stopPropagation();remTick(\''+sym+'\')">✕</button>'
@@ -1857,8 +1908,22 @@ function togglePin(sym){
   if(pinned.has(sym))pinned.delete(sym);else pinned.add(sym);
   save();renderWatch();
 }
+var _watchFilter='';
+function filterWatch(val){
+  _watchFilter=val.trim().toUpperCase();
+  renderWatch();
+  // clear ปุ่ม X ถ้าพิมพ์อะไร
+  var el=document.getElementById('watch-filter-clear');
+  if(el)el.style.display=_watchFilter?'flex':'none';
+}
 function renderWatch(){
   var list=tickers.slice();
+  // apply filter
+  if(_watchFilter){
+    list=list.filter(function(s){
+      return s.indexOf(_watchFilter)>=0||nam(s).toUpperCase().indexOf(_watchFilter)>=0;
+    });
+  }
   // Sort: pinned first, then by selected sort
   if(sortM==='chg')list.sort(function(a,b){return((sd[b]&&sd[b].chgP)||-999)-((sd[a]&&sd[a].chgP)||-999);});
   else if(sortM==='price')list.sort(function(a,b){return((sd[b]&&sd[b].price)||0)-((sd[a]&&sd[a].price)||0);});
@@ -1866,6 +1931,10 @@ function renderWatch(){
   var grid=document.getElementById('wgrid');
   var wasSkeleton=grid.querySelector&&grid.querySelector('.card.skel')!=null;
   grid.className='wgrid '+curLayout;
+  if(_watchFilter&&!list.length){
+    grid.innerHTML='<div style="grid-column:1/-1;padding:32px;text-align:center;color:var(--text3);font-size:13px">'+'ไม่พบ "'+_watchFilter+'" ใน Watchlist</div>';
+    return;
+  }
   grid.innerHTML=list.map(cardH).join('');
   if(wasSkeleton){
     var cards=grid.querySelectorAll('.card');
@@ -1885,7 +1954,24 @@ function renderWatch(){
     // draw sparklines after cards appear
     setTimeout(triggerSparkDrawOn, 200);
   } else {
-    // still retrigger sparkline draw-on for fresh renders
+    // animate only cards that are truly new (not in DOM before)
+    var cards=grid.querySelectorAll('.card:not(.card-seen)');
+    cards.forEach(function(c,i){
+      var sym=c.dataset&&c.dataset.sym;
+      if(!sym)return;
+      if(!_seenCards) _seenCards={};
+      if(!_seenCards[sym]){
+        _seenCards[sym]=true;
+        c.classList.add('card-new');
+        setTimeout(function(){c.classList.remove('card-new');},400);
+      }
+      // animate price if changed
+      var price=sd[sym]&&sd[sym].price;
+      if(price&&_prevPrices&&_prevPrices[sym]&&_prevPrices[sym]!==price){
+        animatePriceCountUp(c, price, 500, _prevPrices[sym]);
+      }
+      if(price){if(!_prevPrices)_prevPrices={};_prevPrices[sym]=price;}
+    });
     setTimeout(triggerSparkDrawOn, 50);
   }
 }
@@ -1905,8 +1991,10 @@ function addTick(){
 function remTick(sym){
   showConfirm('🗑️','ลบออกจาก Watchlist','ลบ '+sym+' ('+nam(sym)+') ออกจาก Watchlist?',function(){
     tickers=tickers.filter(function(s){return s!==sym;});
-    delete sd[sym];delete hd[sym];save();renderWatch();renderHeat();
+    delete sd[sym];delete hd[sym];save();
+    renderWatch();renderHeat();renderPort();
     toast('ลบ '+sym+' แล้ว','info');
+    fetchAll();
   });
 }
 function srt(m){sortM=m;save();renderWatch();}
@@ -1939,7 +2027,14 @@ function openDetail(sym){
   load52W(sym);
   document.getElementById('modal').classList.add('open');
 }
-function closeModal(){document.getElementById('modal').classList.remove('open');}
+function closeModal(){
+  var mov=document.getElementById('modal');
+  var inner=mov.querySelector('.modal');
+  if(inner){inner.style.animation='modalOut .18s ease forwards';}
+  mov.style.transition='background .18s ease';
+  mov.style.background='rgba(0,0,0,0)';
+  setTimeout(function(){mov.classList.remove('open');if(inner)inner.style.animation='';mov.style.background='';},190);
+}
 
 
 // ── PORTFOLIO ──
@@ -1964,8 +2059,9 @@ togForm('add-pos');
 function removePos(sym){
   showConfirm('🗑️','ลบออกจาก Portfolio','ลบ '+sym+' ('+nam(sym)+') ออกจากพอร์ต?',function(){
     positions=positions.filter(function(p){return p.sym!==sym;});
-    save();renderPort();renderHeat();
+    save();renderPort();renderHeat();renderWatch();
     toast('ลบ '+sym+' ออกจากพอร์ตแล้ว','info');
+    fetchAll();
   });
 }
 function editPos(sym){
@@ -2068,8 +2164,8 @@ function renderPort(){
     var price=sd[p.sym]&&sd[p.sym].price;
     var val=price?price*p.qty:null;
     var cost=p.cost*p.qty;
-    var pl=val?val-cost:null;
-    var plP=pl?(pl/cost)*100:null;
+    var pl=val!=null?val-cost:null;
+    var plP=pl!=null?(pl/cost)*100:null;
     var weight=val&&totalVal?(val/totalVal)*100:null;
     var days=p.buy?Math.floor((Date.now()-new Date(p.buy))/86400000):null;
     var cl=pl==null?'nt':pl>=0?'up':'dn';
@@ -2121,8 +2217,23 @@ function addAlert(){
   toast('ตั้ง Alert '+sym+' '+(cond==='above'?'>=':'<=')+'$'+price+' แล้ว','success');
 }
 function removeAlert(id){
+  var removed = alerts.filter(function(a){ return a.id === id; })[0];
   alerts=alerts.filter(function(a){return a.id!==id;});
   saveAlerts();renderAlerts();updateAlBadge();
+  // ลบ ticker ออกจาก watchlist ถ้าไม่มี alert อื่นใช้อยู่ และไม่ได้อยู่ใน portfolio
+  if (removed) {
+    var sym = removed.sym;
+    var stillUsedInAlerts = alerts.some(function(a){ return a.sym === sym; });
+    var inPortfolio = positions.some(function(p){ return p.sym === sym; });
+    if (!stillUsedInAlerts && !inPortfolio) {
+      // ตรวจว่า ticker นี้ถูกเพิ่มจาก watchlist เองหรือจาก alert เท่านั้น
+      // ให้เก็บไว้ถ้าอยู่ใน original tickers (ผู้ใช้เพิ่มมือ)
+      // เราไม่สามารถรู้ได้แน่นอน จึงแจ้งให้ผู้ใช้ทราบ แต่ไม่ลบอัตโนมัติ
+      toast('ลบ Alert แล้ว — ' + sym + ' ยังอยู่ใน Watchlist', 'info');
+    } else {
+      toast('ลบ Alert แล้ว', 'info');
+    }
+  }
 }
 function renderAlerts(){
   var el=document.getElementById('alerts-list');
@@ -2217,7 +2328,18 @@ function summarizeNews(idx,btn){
   panel.innerHTML='<span class="spin">⟳</span> กำลังสรุป...';
   var hl=panel.dataset.hl||'';
   var sm=panel.dataset.sm||'';
-  var prompt='สรุปข่าวการเงินต่อไปนี้เป็นภาษาไทย กระชับ ไม่เกิน 5 บรรทัด เน้นสาระสำคัญที่นักลงทุนควรรู้:\n\nหัวข่าว: '+hl+(sm?'\nเนื้อหา: '+sm:'')+'\n\nตอบเป็นภาษาไทยเท่านั้น ไม่ต้องมี disclaimer';
+  var sym=panel.dataset.sym||'';
+  var priceCtx='';
+  if(sym&&sd[sym]&&sd[sym].price){
+    var nd=sd[sym];
+    var pts2=(hd[sym]||[]).filter(function(v){return v!=null;});
+    var nr=calcRSI(pts2),ne=calcEMA(pts2,20);
+    priceCtx='\n\nข้อมูลหุ้น '+sym+' ณ ปัจจุบัน: $'+nd.price.toFixed(2)
+      +' ('+(nd.chgP>=0?'+':'')+(nd.chgP||0).toFixed(2)+'%)'
+      +(nr!=null?' | RSI: '+nr+(nr<30?' [Oversold]':nr>70?' [Overbought]':''):'')
+      +(ne?' | EMA20: $'+ne.toFixed(2):'');
+  }
+  var prompt='คุณเป็น financial journalist + investment analyst สรุปข่าวนี้เป็นภาษาไทย ไม่เกิน 6 บรรทัด\n\nหัวข่าว: '+hl+(sm?'\nเนื้อหา: '+sm:'')+priceCtx+'\n\nตอบ format:\n📰 สาระสำคัญ: [1 ประโยค]\n📊 ผลกระทบต่อราคา: [บวก/ลบ/กลาง และเหตุผล]\n💡 นักลงทุนระยะยาวควรรู้: [1-2 ประโยค]\nตอบเป็นภาษาไทยเท่านั้น';
   callClaude(prompt).then(function(text){
     panel.textContent=text;
     panel.dataset.done='1';
@@ -2410,7 +2532,15 @@ function renderHeat() {
     var sign=d.chgP>=0?'+':'';
     // onclick
     var onclick='onclick="openDetail(\''+d.sym+'\')"';
-    svg+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="6" fill="'+bg+'" style="cursor:pointer" '+onclick+'/>';
+    var prevPrice=_prevHeatPrices&&_prevHeatPrices[d.sym];
+    var pulseColor='';
+    if(prevPrice&&prevPrice!==d.price)pulseColor=d.price>prevPrice?'rgba(16,185,129,0.7)':'rgba(239,68,68,0.7)';
+    svg+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="6" fill="'+bg+'" style="cursor:pointer" '+onclick+'>';
+    if(pulseColor){
+      svg+='<animate attributeName="opacity" values="1;0.3;1" dur="0.6s" begin="0s" fill="freeze"/>';
+      svg+='<set attributeName="fill" to="'+pulseColor+'" begin="0s" dur="0.15s"/>';
+    }
+    svg+='</rect>';
     if (bw>38&&bh>22) {
       var cx=bx+bw/2, cy=by+bh/2;
       var fs=Math.min(14,Math.max(10,bw/5));
@@ -2429,6 +2559,9 @@ function renderHeat() {
   });
   svg+='</svg>';
   wrap.innerHTML=svg;
+  // cache prices for next render
+  _prevHeatPrices={};
+  items.forEach(function(d){_prevHeatPrices[d.sym]=d.price;});
 }
 
 
@@ -2455,87 +2588,392 @@ function aiAnalyzeStock(){
   if(panel.style.display==='block'){panel.style.display='none';return;}
   panel.style.display='block';
   body.innerHTML='<div class="aiload"><span class="spin">⟳</span> AI กำลังวิเคราะห์...</div>';
-  var prompt='คุณเป็นนักวิเคราะห์การลงทุนระยะยาว วิเคราะห์หุ้น '+sym+' ('+nam(sym)+') สำหรับนักลงทุน VI/Growth ภาษาไทย ไม่เกิน 200 คำ\n\nข้อมูล: ราคา $'+d.price+' | เปลี่ยน '+(d.chgP||0).toFixed(2)+'% | H: $'+d.high+' L: $'+d.low+'\n\nตอบ format:\n📊 ภาพรวม:\n🟢 จุดแข็ง:\n🔴 ความเสี่ยง:\n🎯 มุมมองระยะยาว:\n⚠️ Disclaimer: ไม่ใช่คำแนะนำการลงทุน';
-  callClaude(prompt).then(function(text){body.textContent=text;}).catch(function(e){body.innerHTML='<span style="color:var(--red)">⚠ '+e.message+'</span>';});
-}
-
-function aiBuyAdvisor(){
-  var sym=curSym,d=sd[sym];
-  if(!d||d.err||!CL)return;
-  var panel=document.getElementById('ai-buy-panel');
-  var body=document.getElementById('ai-buy-body');
-  if(panel.style.display==='block'){panel.style.display='none';return;}
-  panel.style.display='block';
-  body.innerHTML='<div class="aiload"><span class="spin">⟳</span> AI กำลังคำนวณราคาที่เหมาะสม...</div>';
   var pts=(hd[sym]||[]).filter(function(v){return v!=null;});
-  var high=pts.length?Math.max.apply(null,pts).toFixed(2):'N/A';
-  var low=pts.length?Math.min.apply(null,pts).toFixed(2):'N/A';
-  var avg=pts.length?(pts.reduce(function(a,b){return a+b;},0)/pts.length).toFixed(2):'N/A';
-  var pos=positions.filter(function(p){return p.sym===sym;})[0];
-  var posInfo=pos?'ถืออยู่ '+pos.qty+' หุ้น @ $'+pos.cost+' (P&L: '+((d.price-pos.cost)/pos.cost*100).toFixed(2)+'%)':'ยังไม่มีในพอร์ต';
-  var prompt='คุณเป็น Value Investor ผู้เชี่ยวชาญ ประเมินราคาที่เหมาะสมในการซื้อหุ้น '+sym+' ('+nam(sym)+') สำหรับนักลงทุนระยะยาว ภาษาไทย ไม่เกิน 220 คำ\n\nข้อมูล: ราคา $'+d.price+' | High: $'+high+' | Low: $'+low+' | Avg: $'+avg+' | '+posInfo+'\n\nตอบ format:\n💰 ราคาที่น่าซื้อ:\n• Zone เหมาะสม: $X–$X (เหตุผล)\n• ราคา Ideal DCA: $X\n• ราคาดีมาก (ถ้าปรับฐาน): $X\n\n📊 เหตุผล:\n• [technical]\n• [valuation]\n\n⚠️ ควรระวัง:\n• [risk]\n\n🎯 กลยุทธ์: [ทยอยซื้อ/รอ/ซื้อทันที]\n\n⚠️ Disclaimer: ไม่ใช่คำแนะนำการลงทุน';
+  var rsi=calcRSI(pts),ema20=calcEMA(pts,20),ema50=calcEMA(pts,50);
+  var boll=calcBollinger(pts),atr=calcATR(pts),sr=calcSupportResistance(pts);
+  var hi30=pts.length?Math.max.apply(null,pts):null,lo30=pts.length?Math.min.apply(null,pts):null;
+  var avg30=pts.length?(pts.reduce(function(a,b){return a+b;},0)/pts.length):null;
+  var pos=positions.filter(function(p){return p.sym===sym;})[0]||null;
+  var techCtx=[
+    'ราคา: $'+d.price.toFixed(2)+' | วันนี้: '+(d.chgP>=0?'+':'')+(d.chgP||0).toFixed(2)+'%',
+    'OHLC: O=$'+(d.open||'?')+' H=$'+(d.high||'?')+' L=$'+(d.low||'?'),
+    'Volume: '+(d.vol>=1e6?(d.vol/1e6).toFixed(1)+'M':d.vol?d.vol.toLocaleString():'N/A'),
+    rsi!=null?'RSI(14): '+rsi+(rsi<30?' [OVERSOLD]':rsi>70?' [OVERBOUGHT]':' [Neutral]'):'RSI: N/A',
+    ema20?'EMA20: $'+ema20.toFixed(2)+' (ราคา '+(pctFromEMA(d.price,ema20)>=0?'+':'')+pctFromEMA(d.price,ema20)+'%)':'',
+    ema50?'EMA50: $'+ema50.toFixed(2)+(ema20&&ema50?(ema20>ema50?' [Uptrend]':' [Downtrend]'):''):'',
+    boll?'Bollinger: Upper=$'+boll.upper+' Mid=$'+boll.mid+' Lower=$'+boll.lower+' | %B='+(((d.price-boll.lower)/(boll.upper-boll.lower))*100).toFixed(0)+'%':'',
+    atr?'ATR(14): $'+atr+' ('+((atr/d.price)*100).toFixed(1)+'% ความผันผวนต่อวัน)':'',
+    (hi30&&lo30)?'30D Range: $'+lo30.toFixed(2)+' - $'+hi30.toFixed(2)+' | Avg: $'+(avg30?avg30.toFixed(2):'N/A'):'',
+    sr.support?'Support: $'+sr.support:'',
+    sr.resistance?'Resistance: $'+sr.resistance:'',
+    pos?'ผู้ใช้ถือ: '+pos.qty+' หุ้น avg cost $'+pos.cost.toFixed(2)+' P&L: '+((d.price-pos.cost)/pos.cost*100).toFixed(2)+'%':'ยังไม่ถือในพอร์ต',
+  ].filter(Boolean).join('\n');
+  var prompt='คุณเป็น sell-side analyst + quantitative researcher วิเคราะห์ '+sym+' ('+nam(sym)+') สำหรับนักลงทุน VI/Growth ระยะยาว ภาษาไทย ไม่เกิน 250 คำ\n\nข้อมูล Technical (คำนวณสด):\n'+techCtx+'\n\nวิเคราะห์โดยอ้างอิงตัวเลขจริงข้างบน ตอบ format:\n📊 ภาพรวม (trend & momentum):\n🟢 จุดแข็ง/โอกาส:\n🔴 ความเสี่ยง/จุดอ่อน:\n🎯 มุมมองระยะยาว:\n⚠️ ไม่ใช่คำแนะนำการลงทุน';
   callClaude(prompt).then(function(text){body.textContent=text;}).catch(function(e){body.innerHTML='<span style="color:var(--red)">⚠ '+e.message+'</span>';});
 }
 
-function aiAnalyzePortfolio(){
-  if(!CL||!positions.length)return;
-  var panel=document.getElementById('ai-port-panel');
-  var body=document.getElementById('ai-port-body');
-  panel.style.display='block';
-  body.innerHTML='<div class="aiload"><span class="spin">⟳</span> AI กำลังวิเคราะห์พอร์ต...</div>';
-  var totalCost=0,totalVal=0;
-  var portInfo=positions.map(function(p){
-    var price=sd[p.sym]&&sd[p.sym].price;
-    var val=price?price*p.qty:null;
-    var cost=p.cost*p.qty;
-    var pl=val?((val-cost)/cost*100).toFixed(2):null;
-    if(val)totalVal+=val;
-    totalCost+=cost;
-    return p.sym+' ('+nam(p.sym)+'): '+p.qty+' หุ้น @ $'+p.cost+' | ราคา $'+(price||'N/A')+' | P&L: '+(pl||'N/A')+'%';
-  }).join('\n');
-  var totalPLP=totalCost?((totalVal-totalCost)/totalCost*100).toFixed(2):0;
-  var prompt='คุณเป็นที่ปรึกษาการลงทุนระยะยาว วิเคราะห์พอร์ตนี้ ภาษาไทย ไม่เกิน 250 คำ\n\nพอร์ต:\n'+portInfo+'\n\nต้นทุน: $'+totalCost.toFixed(2)+' | มูลค่า: $'+totalVal.toFixed(2)+' | P&L: '+totalPLP+'%\n\nวิเคราะห์:\n📊 ภาพรวมพอร์ต:\n⚖️ การกระจายความเสี่ยง:\n⭐ จุดแข็ง:\n⚠️ จุดที่ควรระวัง:\n💡 คำแนะนำ:\n⚠️ Disclaimer: ไม่ใช่คำแนะนำการลงทุน';
-  callClaude(prompt).then(function(text){body.textContent=text;}).catch(function(e){body.innerHTML='<span style="color:var(--red)">⚠ '+e.message+'</span>';});
-}
+// ─────────────────────────────────────────────────────────────
+// ── AI BUY ADVISOR (v2 — smart) ──
+// ─────────────────────────────────────────────────────────────
 
-// ── CSV ──
-// ═══════════════════════════════════════════════
-// ── SHARE CARD ──
-// ═══════════════════════════════════════════════
-var scMode = 'port';
-var scSym  = null;
-
-function showShareCard() {
-  document.getElementById('share-modal').style.display = 'flex';
-  setShareMode('port');
-}
-function closeShareCard() {
-  document.getElementById('share-modal').style.display = 'none';
-}
-function setShareMode(mode) {
-  scMode = mode;
-  var pbtn = document.getElementById('sc-mode-port');
-  var sbtn = document.getElementById('sc-mode-stock');
-  var sel  = document.getElementById('sc-stock-sel');
-  pbtn.className = mode==='port' ? 'btn ba' : 'btn';
-  sbtn.className = mode==='stock' ? 'btn ba' : 'btn';
-  sel.style.display = mode==='stock' ? 'block' : 'none';
-
-  if (mode === 'stock') {
-    // Render stock buttons
-    var btns = document.getElementById('sc-stock-btns');
-    btns.innerHTML = positions.map(function(p) {
-      var active = p.sym === scSym;
-      return '<button class="btn'+(active?' ba':'')+'" onclick="selectShareStock(\''+p.sym+'\')" style="font-size:12px;color:'+col(p.sym)+'">'+p.sym+'</button>';
-    }).join('');
-    if (!scSym && positions.length) { scSym = positions[0].sym; setShareMode('stock'); return; }
+// คำนวณ RSI จาก price array
+function calcRSI(prices, period) {
+  period = period || 14;
+  if (prices.length < period + 1) return null;
+  var gains = 0, losses = 0;
+  for (var i = 1; i <= period; i++) {
+    var diff = prices[i] - prices[i - 1];
+    if (diff >= 0) gains += diff; else losses += Math.abs(diff);
   }
-  renderShareCard();
+  var avgGain = gains / period, avgLoss = losses / period;
+  for (var j = period + 1; j < prices.length; j++) {
+    var d = prices[j] - prices[j - 1];
+    avgGain = (avgGain * (period - 1) + (d > 0 ? d : 0)) / period;
+    avgLoss = (avgLoss * (period - 1) + (d < 0 ? Math.abs(d) : 0)) / period;
+  }
+  if (avgLoss === 0) return 100;
+  var rs = avgGain / avgLoss;
+  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
 }
-function selectShareStock(sym) {
-  scSym = sym;
-  setShareMode('stock');
+
+// คำนวณ EMA
+function calcEMA(prices, period) {
+  if (prices.length < period) return null;
+  var k = 2 / (period + 1);
+  var ema = prices.slice(0, period).reduce(function(s, v) { return s + v; }, 0) / period;
+  for (var i = period; i < prices.length; i++) {
+    ema = prices[i] * k + ema * (1 - k);
+  }
+  return parseFloat(ema.toFixed(4));
 }
+
+// คำนวณ Bollinger Bands (20,2)
+function calcBollinger(prices) {
+  var n = Math.min(prices.length, 20);
+  if (n < 5) return null;
+  var slice = prices.slice(-n);
+  var mean = slice.reduce(function(s, v) { return s + v; }, 0) / n;
+  var variance = slice.reduce(function(s, v) { return s + Math.pow(v - mean, 2); }, 0) / n;
+  var std = Math.sqrt(variance);
+  return {
+    upper: parseFloat((mean + 2 * std).toFixed(2)),
+    mid:   parseFloat(mean.toFixed(2)),
+    lower: parseFloat((mean - 2 * std).toFixed(2)),
+    std:   parseFloat(std.toFixed(2))
+  };
+}
+
+// คำนวณ ATR (volatility)
+function calcATR(prices, period) {
+  period = period || 14;
+  if (prices.length < period + 1) return null;
+  var trs = [];
+  for (var i = 1; i < prices.length; i++) {
+    trs.push(Math.abs(prices[i] - prices[i - 1]));
+  }
+  var atr = trs.slice(-period).reduce(function(s, v) { return s + v; }, 0) / period;
+  return parseFloat(atr.toFixed(2));
+}
+
+// หา Support / Resistance zones แบบง่าย (จาก local min/max ของ 30 วัน)
+function calcSupportResistance(prices) {
+  if (prices.length < 5) return { support: null, resistance: null };
+  var n = prices.length;
+  var supports = [], resistances = [];
+  for (var i = 2; i < n - 2; i++) {
+    if (prices[i] < prices[i-1] && prices[i] < prices[i+1] &&
+        prices[i] < prices[i-2] && prices[i] < prices[i+2]) {
+      supports.push(prices[i]);
+    }
+    if (prices[i] > prices[i-1] && prices[i] > prices[i+1] &&
+        prices[i] > prices[i-2] && prices[i] > prices[i+2]) {
+      resistances.push(prices[i]);
+    }
+  }
+  var curPrice = prices[prices.length - 1];
+  // support = ค่าสูงสุดที่ต่ำกว่าราคาปัจจุบัน
+  var sup = supports.filter(function(v) { return v < curPrice; });
+  // resistance = ค่าต่ำสุดที่สูงกว่าราคาปัจจุบัน
+  var res = resistances.filter(function(v) { return v > curPrice; });
+  return {
+    support:    sup.length    ? parseFloat(Math.max.apply(null, sup).toFixed(2))    : null,
+    resistance: res.length    ? parseFloat(Math.min.apply(null, res).toFixed(2))    : null
+  };
+}
+
+// คำนวณ % distance จาก EMA
+function pctFromEMA(price, ema) {
+  if (!ema) return null;
+  return parseFloat(((price - ema) / ema * 100).toFixed(2));
+}
+
+// สร้าง HTML card แสดงผลวิเคราะห์
+function renderBuyAdvisorCard(data) {
+  var sym      = data.sym;
+  var price    = data.price;
+  var rsi      = data.rsi;
+  var ema20    = data.ema20;
+  var ema50    = data.ema50;
+  var boll     = data.boll;
+  var atr      = data.atr;
+  var sr       = data.sr;
+  var hi30     = data.hi30;
+  var lo30     = data.lo30;
+  var hi52     = data.hi52;
+  var lo52     = data.lo52;
+  var pos      = data.pos;
+  var aiResult = data.aiResult;
+  var c        = col(sym);
+
+  // RSI color
+  var rsiColor = rsi === null ? 'var(--text2)'
+    : rsi < 30 ? 'var(--green)'
+    : rsi > 70 ? 'var(--red)'
+    : 'var(--amber)';
+  var rsiLabel = rsi === null ? 'N/A'
+    : rsi < 30 ? 'Oversold 🟢'
+    : rsi > 70 ? 'Overbought 🔴'
+    : rsi > 50 ? 'Neutral (Bullish) 🟡'
+    : 'Neutral (Bearish) 🟡';
+
+  // Bollinger position
+  var bollPct = null, bollLabel = '';
+  if (boll && boll.upper !== boll.lower) {
+    bollPct = parseFloat(((price - boll.lower) / (boll.upper - boll.lower) * 100).toFixed(1));
+    bollLabel = bollPct < 20 ? 'ใกล้ Lower Band 🟢'
+              : bollPct > 80 ? 'ใกล้ Upper Band 🔴'
+              : 'กลาง Bollinger 🟡';
+  }
+
+  // EMA trend
+  var ema20Dist = pctFromEMA(price, ema20);
+  var ema50Dist = pctFromEMA(price, ema50);
+  var emaTrend  = (ema20 && ema50) ? (ema20 > ema50 ? '📈 Uptrend (EMA20 > EMA50)' : '📉 Downtrend (EMA20 < EMA50)') : '';
+
+  // 52W position bar
+  var w52PctHtml = '';
+  if (hi52 && lo52 && hi52 > lo52) {
+    var w52Pct = Math.max(0, Math.min(100, ((price - lo52) / (hi52 - lo52) * 100)));
+    var barColor = w52Pct < 30 ? 'var(--green)' : w52Pct > 70 ? 'var(--red)' : 'var(--amber)';
+    w52PctHtml = '<div style="margin:8px 0 4px">'
+      + '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text3);margin-bottom:3px">'
+      + '<span>52W Lo $' + lo52.toFixed(2) + '</span>'
+      + '<span style="color:' + barColor + '">' + w52Pct.toFixed(0) + '%</span>'
+      + '<span>52W Hi $' + hi52.toFixed(2) + '</span></div>'
+      + '<div style="height:6px;background:var(--bg4);border-radius:3px;position:relative">'
+      + '<div style="height:100%;width:' + w52Pct.toFixed(1) + '%;background:linear-gradient(to right,var(--green),var(--amber),var(--red));border-radius:3px"></div>'
+      + '<div style="position:absolute;top:-3px;left:' + w52Pct.toFixed(1) + '%;transform:translateX(-50%);width:12px;height:12px;background:' + barColor + ';border-radius:50%;border:2px solid var(--bg2)"></div>'
+      + '</div></div>';
+  }
+
+  // Position info
+  var posHtml = '';
+  if (pos) {
+    var plp = price ? ((price - pos.cost) / pos.cost * 100) : 0;
+    var plColor = plp >= 0 ? 'var(--green)' : 'var(--red)';
+    posHtml = '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:10px;display:flex;gap:14px;flex-wrap:wrap;font-size:11px">'
+      + '<span style="color:var(--text3)">ถืออยู่</span>'
+      + '<span>' + pos.qty + ' หุ้น</span>'
+      + '<span>avg cost <strong>$' + pos.cost.toFixed(2) + '</strong></span>'
+      + '<span style="color:' + plColor + '">' + (plp >= 0 ? '+' : '') + plp.toFixed(2) + '% P&L</span>'
+      + '</div>';
+  }
+
+  // Technical summary grid
+  var techHtml = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">';
+
+  function metricBox(label, val, sub, subColor) {
+    return '<div style="background:var(--bg2);border-radius:8px;padding:8px 10px">'
+      + '<div style="font-size:9px;color:var(--text3);margin-bottom:2px">' + label + '</div>'
+      + '<div style="font-size:13px;font-weight:700">' + val + '</div>'
+      + (sub ? '<div style="font-size:9px;margin-top:1px;color:' + (subColor || 'var(--text2)') + '">' + sub + '</div>' : '')
+      + '</div>';
+  }
+
+  techHtml += metricBox('RSI (14)', rsi !== null ? rsi : 'N/A', rsiLabel, rsiColor);
+  techHtml += metricBox('Bollinger', bollPct !== null ? bollPct + '%' : 'N/A', bollLabel, bollPct !== null ? (bollPct < 20 ? 'var(--green)' : bollPct > 80 ? 'var(--red)' : 'var(--amber)') : null);
+  techHtml += metricBox('EMA 20', ema20 ? '$' + ema20.toFixed(2) : 'N/A', ema20Dist !== null ? (ema20Dist >= 0 ? '+' : '') + ema20Dist + '% จากราคา' : '', ema20Dist !== null ? (ema20Dist < 0 ? 'var(--green)' : 'var(--red)') : null);
+  techHtml += metricBox('EMA 50', ema50 ? '$' + ema50.toFixed(2) : 'N/A', emaTrend || '', 'var(--text2)');
+  techHtml += metricBox('ATR (Volatility)', atr ? '$' + atr : 'N/A', atr && price ? (atr / price * 100).toFixed(1) + '% ของราคา' : '');
+  techHtml += metricBox('30D Range', lo30 ? '$' + lo30.toFixed(2) + ' – $' + hi30.toFixed(2) : 'N/A', '');
+  techHtml += '</div>';
+
+  // Support / Resistance
+  var srHtml = '';
+  if (sr.support || sr.resistance) {
+    srHtml = '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">';
+    if (sr.support) srHtml += '<div style="flex:1;min-width:80px;background:rgba(16,185,129,.08);border:1px solid var(--gbd);border-radius:8px;padding:7px 10px;font-size:11px"><div style="color:var(--text3);font-size:9px;margin-bottom:2px">Support</div><div style="font-weight:700;color:var(--green)">$' + sr.support + '</div><div style="font-size:9px;color:var(--text3)">' + ((price - sr.support) / price * 100).toFixed(1) + '% ต่ำกว่าราคา</div></div>';
+    if (sr.resistance) srHtml += '<div style="flex:1;min-width:80px;background:rgba(239,68,68,.06);border:1px solid var(--rbd);border-radius:8px;padding:7px 10px;font-size:11px"><div style="color:var(--text3);font-size:9px;margin-bottom:2px">Resistance</div><div style="font-weight:700;color:var(--red)">$' + sr.resistance + '</div><div style="font-size:9px;color:var(--text3)">' + ((sr.resistance - price) / price * 100).toFixed(1) + '% สูงกว่าราคา</div></div>';
+    srHtml += '</div>';
+  }
+
+  // Parse AI result into sections for pretty rendering
+  var aiHtml = '';
+  if (aiResult) {
+    // แปลง newline + emoji header เป็น styled blocks
+    var lines = aiResult.split('\n');
+    var inBlock = false;
+    aiHtml = '<div style="margin-top:4px">';
+    lines.forEach(function(line) {
+      line = line.trim();
+      if (!line) { if (inBlock) aiHtml += '</div>'; inBlock = false; return; }
+      // Header lines (start with emoji or •)
+      if (/^[💰📊🎯⚠️🟢🔴🔵💡📈📉]/.test(line)) {
+        if (inBlock) { aiHtml += '</div>'; inBlock = false; }
+        aiHtml += '<div style="font-size:12px;font-weight:700;color:var(--text);margin:8px 0 3px">' + line + '</div>';
+      } else if (line.startsWith('•') || line.startsWith('-')) {
+        if (!inBlock) { aiHtml += '<div style="padding-left:10px">'; inBlock = true; }
+        aiHtml += '<div style="font-size:11px;color:var(--text2);line-height:1.6;padding:1px 0">' + line + '</div>';
+      } else {
+        if (inBlock) { aiHtml += '</div>'; inBlock = false; }
+        aiHtml += '<div style="font-size:11px;color:var(--text2);line-height:1.6">' + line + '</div>';
+      }
+    });
+    if (inBlock) aiHtml += '</div>';
+    aiHtml += '</div>';
+  }
+
+  return '<div>'
+    // Header price
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">'
+    + '<div style="width:32px;height:32px;border-radius:9px;background:' + c + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0">' + sym.slice(0,2) + '</div>'
+    + '<div><div style="font-size:14px;font-weight:700">' + sym + ' · $' + price.toFixed(2) + '</div>'
+    + '<div style="font-size:10px;color:var(--text3)">' + nam(sym) + ' · วิเคราะห์ Technical ด้วย AI</div></div>'
+    + '</div>'
+    + w52PctHtml
+    + posHtml
+    // Technical grid
+    + '<div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">📊 Technical Indicators</div>'
+    + techHtml
+    + srHtml
+    // AI analysis
+    + '<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:2px">'
+    + '<div style="font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">🤖 AI วิเคราะห์ราคาซื้อ</div>'
+    + aiHtml
+    + '</div>'
+    + '</div>';
+}
+
+function aiBuyAdvisor() {
+  var sym = curSym, d = sd[sym];
+  if (!d || d.err || !CL) return;
+  var panel = document.getElementById('ai-buy-panel');
+  var body  = document.getElementById('ai-buy-body');
+  if (panel.style.display === 'block') { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  body.innerHTML = '<div class="aiload"><span class="spin">⟳</span> กำลังโหลด price history...</div>';
+
+  var price = d.price;
+  var pos   = positions.filter(function(p) { return p.sym === sym; })[0] || null;
+
+  // ── fetch history ก่อนเสมอ แล้วค่อยคำนวณ ──
+  function runWithHistory(pts) {
+    body.innerHTML = '<div class="aiload"><span class="spin">⟳</span> กำลังคำนวณ indicators และวิเคราะห์...</div>';
+    var hi30  = pts.length ? Math.max.apply(null, pts) : null;
+    var lo30  = pts.length ? Math.min.apply(null, pts) : null;
+    var avg30 = pts.length ? pts.reduce(function(a,b){return a+b;},0)/pts.length : null;
+    var rsi   = calcRSI(pts);
+    var ema20 = calcEMA(pts, 20);
+    var ema50 = calcEMA(pts, 50);
+    var boll  = calcBollinger(pts);
+    var atr   = calcATR(pts);
+    var sr    = calcSupportResistance(pts);
+
+    function proceedWithAnalysis(hi52, lo52) {
+      var techContext = [
+        'ราคาปัจจุบัน: $' + price.toFixed(2),
+        'เปลี่ยนวันนี้: ' + (d.chgP >= 0 ? '+' : '') + (d.chgP || 0).toFixed(2) + '%',
+        'OHLC: O=$' + (d.open||'N/A') + ' H=$' + (d.high||'N/A') + ' L=$' + (d.low||'N/A'),
+        '',
+        '── Technical Indicators (คำนวณจาก ' + pts.length + ' วันย้อนหลัง) ──',
+        'RSI(14): ' + (rsi !== null ? rsi + (rsi < 30 ? ' → OVERSOLD' : rsi > 70 ? ' → OVERBOUGHT' : ' → Neutral') : 'N/A (ข้อมูลไม่พอ)'),
+        'EMA20: ' + (ema20 ? '$' + ema20.toFixed(2) + ' (ราคา ' + (pctFromEMA(price,ema20) >= 0 ? '+' : '') + pctFromEMA(price,ema20) + '% จาก EMA)' : 'N/A'),
+        'EMA50: ' + (ema50 ? '$' + ema50.toFixed(2) + (ema20 && ema50 ? (ema20 > ema50 ? ' → Uptrend' : ' → Downtrend') : '') : 'N/A (ข้อมูลไม่พอ ต้องการ 50 วัน)'),
+        'Bollinger: Upper=$' + (boll ? boll.upper : 'N/A') + ' Mid=$' + (boll ? boll.mid : 'N/A') + ' Lower=$' + (boll ? boll.lower : 'N/A'),
+        'Bollinger %B: ' + (boll ? (((price-boll.lower)/(boll.upper-boll.lower))*100).toFixed(1) + '%' : 'N/A'),
+        'ATR(14): ' + (atr ? '$' + atr + ' (' + (atr/price*100).toFixed(1) + '% ต่อวัน)' : 'N/A'),
+        '30D High: $' + (hi30 ? hi30.toFixed(2) : 'N/A') + ' | 30D Low: $' + (lo30 ? lo30.toFixed(2) : 'N/A') + ' | 30D Avg: $' + (avg30 ? avg30.toFixed(2) : 'N/A'),
+        'Support: ' + (sr.support ? '$' + sr.support : 'ไม่ชัดเจน') + ' | Resistance: ' + (sr.resistance ? '$' + sr.resistance : 'ไม่ชัดเจน'),
+        hi52 ? '52W High: $' + hi52.toFixed(2) + ' | 52W Low: $' + lo52.toFixed(2) + ' | ราคาอยู่ที่ ' + ((price-lo52)/(hi52-lo52)*100).toFixed(0) + '% ของ 52W range' : '',
+      ].filter(Boolean).join('\n');
+
+      var posContext = pos
+        ? 'ผู้ใช้ถือ ' + pos.qty + ' หุ้น avg cost $' + pos.cost.toFixed(2) + ' (P&L: ' + ((price-pos.cost)/pos.cost*100).toFixed(2) + '%)'
+        : 'ยังไม่ได้ถือหุ้นนี้ในพอร์ต';
+
+      var prompt = 'คุณเป็น quantitative analyst + value investor ผู้เชี่ยวชาญ\n'
+        + 'วิเคราะห์ราคาที่เหมาะสมในการซื้อ ' + sym + ' (' + nam(sym) + ') สำหรับนักลงทุนระยะยาว DCA\n\n'
+        + techContext + '\n\nสถานะผู้ใช้: ' + posContext + '\n\n'
+        + 'จากข้อมูล technical ด้านบน วิเคราะห์และตอบเป็นภาษาไทย ไม่เกิน 280 คำ ตาม format นี้:\n\n'
+        + '💰 ราคาที่น่าซื้อ:\n'
+        + '• Zone ดี (Conservative DCA): $X–$X\n'
+        + '• Zone ดีมาก (ถ้าปรับฐาน): $X–$X\n'
+        + '• ราคา Ideal จากเทคนิค: $X (อ้างอิง indicator ที่ใช้)\n\n'
+        + '📊 เหตุผลจาก indicators:\n'
+        + '• RSI บอกว่า...\n'
+        + '• EMA/Trend บอกว่า...\n'
+        + '• Bollinger/Volatility บอกว่า...\n'
+        + '• Support zone ที่ $X ทำให้...\n\n'
+        + '🎯 กลยุทธ์แนะนำ: [ซื้อทันที/ทยอย DCA/รอปรับฐาน] พร้อมเหตุผล\n\n'
+        + (pos ? '💡 สำหรับผู้ถือที่ avg $' + pos.cost.toFixed(2) + ': [ควร DCA เพิ่มหรือรอ?]\n\n' : '')
+        + '⚠️ Disclaimer: ไม่ใช่คำแนะนำการลงทุน';
+
+      callClaude(prompt).then(function(text) {
+        body.textContent = text;
+      }).catch(function(e) {
+        body.innerHTML = '<span style="color:var(--red)">⚠ ' + e.message + '</span>';
+      });
+    }
+
+    // ดึง 52W
+    if (isCrypto(sym)) {
+      var id = CRYPTO_IDS[sym];
+      if (id) {
+        fetch('https://api.coingecko.com/api/v3/coins/' + id + '/market_chart?vs_currency=usd&days=365&interval=daily')
+          .then(function(r){ return r.json(); })
+          .then(function(data){
+            var p365 = data.prices ? data.prices.map(function(p){return p[1];}) : [];
+            proceedWithAnalysis(p365.length ? Math.max.apply(null,p365) : null, p365.length ? Math.min.apply(null,p365) : null);
+          }).catch(function(){ proceedWithAnalysis(null, null); });
+      } else { proceedWithAnalysis(null, null); }
+    } else {
+      fetch('https://finnhub.io/api/v1/stock/metric?symbol=' + sym + '&metric=all&token=' + FH)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          var m = data.metric || {};
+          proceedWithAnalysis(m['52WeekHigh'] || null, m['52WeekLow'] || null);
+        }).catch(function(){ proceedWithAnalysis(null, null); });
+    }
+  }
+
+  // ถ้ามี history แล้วใช้เลย ถ้าไม่มีให้ fetch ก่อน
+  var existing = (hd[sym] || []).filter(function(v){ return v != null; });
+  if (existing.length >= 15) {
+    runWithHistory(existing);
+  } else {
+    // fetch history แล้วรอ
+    var histPromise = isCrypto(sym)
+      ? (function(){
+          var id = CRYPTO_IDS[sym];
+          if (!id) return Promise.resolve([]);
+          return fetch('https://api.coingecko.com/api/v3/coins/'+id+'/market_chart?vs_currency=usd&days=30&interval=daily')
+            .then(function(r){ return r.json(); })
+            .then(function(d){ return d.prices ? d.prices.map(function(p){return p[1];}) : []; })
+            .catch(function(){ return []; });
+        })()
+      : (function(){
+          var now = Math.floor(Date.now()/1000);
+          return fetchCandlesWithFallback(sym,'D',now-30*86400,now)
+            .then(function(d){ return (d && d.c) ? d.c : []; })
+            .catch(function(){ return []; });
+        })();
+    histPromise.then(function(pts) {
+      if (pts.length) hd[sym] = pts;
+      runWithHistory(pts);
+    });
+  }
+}
+
 
 function renderShareCard() {
   var preview = document.getElementById('sc-preview');
@@ -2770,18 +3208,23 @@ function toggleFake(on) {
 }
 
 // Wrap fd/fp/fp ให้รองรับ privacy/fake
-var _origFd = fd, _origFp = fp;
+// Guard: ห้าม wrap ซ้ำมากกว่า 1 ครั้ง
 var _inWatchRender = false;
+if (!fd._wrapped) {
+var _origFd = fd, _origFp = fp;
 fd = function(v) {
   if (privacyOn && !_inWatchRender) return '••••••';
   if (fakeMode && v != null) v = v * fakeMultiplier;
   return _origFd(v);
 };
+fd._wrapped = true;
 fp = function(v) {
   if (privacyOn && !_inWatchRender) return '••••••';
   if (fakeMode && v != null) v = v * fakeMultiplier;
   return _origFp(v);
 };
+fp._wrapped = true;
+}
 
 function prv(str) { return (privacyOn && !_inWatchRender) ? '••••••' : str; }
 function prvN(num, decimals) {
@@ -2797,7 +3240,20 @@ var pinBuffer = '';
 var pinAttempts = 0;
 
 function getPINHash() { return localStorage.getItem('stp4_pin') || ''; }
-function hashPIN(p)   { var h=0; for(var i=0;i<p.length;i++) h=(h<<5)-h+p.charCodeAt(i); return h.toString(36); }
+function hashPIN(p) {
+  // FNV-1a inspired hash — ลด collision สำหรับ 4-digit PIN
+  var h = 2166136261;
+  for (var i = 0; i < p.length; i++) {
+    h ^= p.charCodeAt(i);
+    h = (h * 16777619) >>> 0; // unsigned 32-bit
+  }
+  // เพิ่ม salt จากความยาวเพื่อแยก "1" vs "1000"
+  h ^= (p.length * 31337);
+  h = h >>> 0;
+  return h.toString(36);
+}
+// Legacy djb2 hash สำหรับ backward-compat (PIN ที่ตั้งไว้ก่อนหน้า)
+function hashPIN_legacy(p) { var h=0; for(var i=0;i<p.length;i++) h=(h<<5)-h+p.charCodeAt(i); return h.toString(36); }
 
 function initPINLock() {
   var stored = getPINHash();
@@ -2835,7 +3291,14 @@ function updatePinDots(cls) {
 }
 
 function checkPIN() {
-  if (hashPIN(pinBuffer) === getPINHash()) {
+  var stored = getPINHash();
+  var isNewHash = hashPIN(pinBuffer) === stored;
+  var isLegacyHash = !isNewHash && hashPIN_legacy(pinBuffer) === stored;
+  if (isNewHash || isLegacyHash) {
+    // Migration: ถ้า PIN เดิมใช้ legacy hash ให้อัปเดตเป็น hash ใหม่
+    if (isLegacyHash) {
+      localStorage.setItem('stp4_pin', hashPIN(pinBuffer));
+    }
     var overlay = document.getElementById('pin-overlay');
     if (overlay) overlay.style.display = 'none';
     pinBuffer = ''; updatePinDots();
@@ -2904,7 +3367,7 @@ function removePIN() {
 // ── BACKUP / RESTORE ──
 // ═══════════════════════════════════════════════
 function backupData() {
-  var keys = ['stp4','stp4_al','stp4_dca','stp4_tgt','stp4_synch','stp4_cap'];
+  var keys = ['stp4','stp4_al','stp4_dca','stp4_tgt','stp4_synch','stp4_cap','stp4_snap'];
   var backup = {
     version: 2,
     ts: new Date().toISOString(),
@@ -2957,8 +3420,21 @@ function restoreData(input) {
           Object.keys(backup.data).forEach(function(k) {
             localStorage.setItem(k, JSON.stringify(backup.data[k]));
           });
-          toast('Restore สำเร็จ ✓ กำลัง reload...');
-          setTimeout(function(){ location.reload(); }, 1200);
+          // โหลด state กลับเข้า memory แล้ว re-render ทันที ไม่ต้อง reload
+          load();
+          renderWatch();
+          renderPort();
+          renderAlloc();
+          renderHeat();
+          renderAlerts();
+          renderDCA();
+          renderSyncHistory();
+          renderSnap();
+          renderCapital();
+          populateNewsSel();
+          populateTVSel();
+          fetchAll();
+          toast('Restore สำเร็จ ✓', 'success');
         }
       );
     } catch(err) {
@@ -3176,11 +3652,26 @@ function aiExitStrategy(){
   panel.style.display='block';
   body.innerHTML='<div class="aiload"><span class="spin">⟳</span> AI กำลังวิเคราะห์ Exit Strategy...</div>';
   var pos=positions.filter(function(p){return p.sym===sym;})[0];
-  var posStr=pos?'ถือ '+pos.qty+' หุ้น @ avg $'+pos.cost+' (P&L: '+((d.price-pos.cost)/pos.cost*100).toFixed(2)+'%)':'ยังไม่ได้ถือในพอร์ต';
   var pts=(hd[sym]||[]).filter(function(v){return v!=null;});
-  var high=pts.length?Math.max.apply(null,pts).toFixed(2):'N/A';
-  var low=pts.length?Math.min.apply(null,pts).toFixed(2):'N/A';
-  var prompt='คุณเป็นนักวิเคราะห์การลงทุน ช่วยแนะนำ Exit Strategy สำหรับหุ้น '+sym+' ('+nam(sym)+') สำหรับนักลงทุนระยะยาว ภาษาไทย ไม่เกิน 220 คำ\n\nข้อมูล: ราคา $'+d.price+' | High ช่วงนี้: $'+high+' | Low ช่วงนี้: $'+low+'\nสถานะ: '+posStr+'\n\nตอบ format:\n🚪 เมื่อไหร่ควรขาย:\n• [สัญญาณที่ 1 เช่น ราคาถึง target]\n• [สัญญาณที่ 2 เช่น fundamentals เปลี่ยน]\n• [สัญญาณที่ 3 เช่น stop loss]\n\n💰 ราคาเป้าหมายขาย:\n• Target 1 (Conservative): $X\n• Target 2 (Optimistic): $X\n• Stop Loss: $X\n\n⚠️ สัญญาณเตือนที่ควรระวัง:\n• [red flag]\n\n🎯 สรุปกลยุทธ์: [1-2 ประโยค]\n\n⚠️ Disclaimer: ไม่ใช่คำแนะนำการลงทุน';
+  var rsi=calcRSI(pts), ema20=calcEMA(pts,20), ema50=calcEMA(pts,50);
+  var boll=calcBollinger(pts), atr=calcATR(pts), sr=calcSupportResistance(pts);
+  var hi30=pts.length?Math.max.apply(null,pts):null, lo30=pts.length?Math.min.apply(null,pts):null;
+  var posStr=pos
+    ?'ถือ '+pos.qty+' หุ้น avg $'+pos.cost.toFixed(2)
+      +' | P&L: '+((d.price-pos.cost)/pos.cost*100).toFixed(2)+'%'
+      +' | มูลค่า $'+(d.price*pos.qty).toFixed(2)
+    :'ยังไม่ถือในพอร์ต';
+  var techCtx=[
+    'ราคา: $'+d.price.toFixed(2)+' | วันนี้: '+(d.chgP>=0?'+':'')+(d.chgP||0).toFixed(2)+'%',
+    rsi!=null?'RSI(14): '+rsi+(rsi<30?' [OVERSOLD ← โอกาสถือต่อ]':rsi>70?' [OVERBOUGHT ← พิจารณาขาย]':' [Neutral]'):'',
+    ema20?'EMA20: $'+ema20.toFixed(2)+' | EMA50: '+(ema50?'$'+ema50.toFixed(2):'N/A')+(ema20&&ema50?(ema20>ema50?' [Uptrend]':' [Downtrend ← เฝ้าระวัง]'):''):'',
+    boll?'Bollinger %B: '+(((d.price-boll.lower)/(boll.upper-boll.lower))*100).toFixed(0)+'% | Upper: $'+boll.upper+' Lower: $'+boll.lower:'',
+    atr?'ATR: $'+atr+' → stop loss zone ห่าง ~'+(atr*1.5).toFixed(2)+' จากราคา':'',
+    sr.resistance?'Resistance (target zone): $'+sr.resistance:'',
+    sr.support?'Support (stop loss zone): $'+sr.support:'',
+    hi30?'30D High: $'+hi30.toFixed(2)+' | 30D Low: $'+lo30.toFixed(2):'',
+  ].filter(Boolean).join('\n');
+  var prompt='คุณเป็น risk manager + technical analyst แนะนำ Exit Strategy สำหรับ '+sym+' ('+nam(sym)+') นักลงทุน DCA ระยะยาว ภาษาไทย ไม่เกิน 250 คำ\n\nสถานะ: '+posStr+'\n\nข้อมูล Technical:\n'+techCtx+'\n\nใช้ตัวเลขจริงข้างบนระบุราคาที่แม่นยำ ตอบ format:\n🚪 เมื่อไหร่ควรขาย (อ้างอิง indicator จริง):\n• สัญญาณเทคนิค: [RSI/EMA/Bollinger บอกอะไร]\n• สัญญาณ Fundamental: [ควรติดตามอะไร]\n• Momentum break: [เมื่อราคาทะลุ level ไหน]\n\n💰 ราคาเป้าหมาย (คำนวณจาก resistance/ATR):\n• Target 1 (Conservative): $X [เหตุผล]\n• Target 2 (Optimistic): $X [เหตุผล]\n• Stop Loss: $X [= support - 1.5×ATR หรือ % จาก cost]\n\n🎯 กลยุทธ์: [ถือต่อ/ขายบางส่วน/trailing stop]\n⚠️ ไม่ใช่คำแนะนำการลงทุน';
   callClaude(prompt).then(function(t){body.textContent=t;}).catch(function(e){body.innerHTML='<span style="color:var(--red)">⚠ '+e.message+'</span>';});
 }
 
@@ -3472,25 +3963,40 @@ function appendChatMsg(role, text){
 }
 
 function buildChatContext(){
-  // สรุปข้อมูลพอร์ตและ watchlist ให้ AI รู้
-  var lines=['ข้อมูลพอร์ตและ watchlist ของผู้ใช้:'];
+  var lines=['=== Portfolio & Watchlist (real-time + technical) ==='];
   if(positions.length){
     lines.push('\n📊 Portfolio:');
-    var totalVal=0;
+    var totalVal=0,totalCost=0;
     positions.forEach(function(p){
-      var price=sd[p.sym]&&sd[p.sym].price;
+      var d=sd[p.sym];
+      var price=d&&d.price;
       var val=price?price*p.qty:0;
-      totalVal+=val;
+      totalVal+=val; totalCost+=p.cost*p.qty;
       var pl=price?(((price-p.cost)/p.cost)*100).toFixed(2):null;
-      lines.push('• '+p.sym+' ('+nam(p.sym)+'): '+p.qty+' หุ้น, avg cost $'+p.cost+', ราคาปัจจุบัน '+(price?'$'+price.toFixed(2):'N/A')+(pl?' P&L: '+pl+'%':''));
+      var pts=(hd[p.sym]||[]).filter(function(v){return v!=null;});
+      var rsi=calcRSI(pts),ema20=calcEMA(pts,20);
+      var trend=ema20&&price?(price>ema20?'above EMA20':'below EMA20'):'';
+      lines.push('• '+p.sym+' ('+nam(p.sym)+'): '+p.qty+' หุ้น | cost $'+p.cost.toFixed(2)
+        +' | ราคา '+(price?'$'+price.toFixed(2):'N/A')
+        +(pl?' | P&L '+pl+'%':'')
+        +(d&&d.chgP!=null?' | วันนี้ '+(d.chgP>=0?'+':'')+d.chgP.toFixed(2)+'%':'')
+        +(rsi!=null?' | RSI '+rsi+(rsi<30?' [Oversold]':rsi>70?' [Overbought]':''):'')
+        +(trend?' | '+trend:''));
     });
-    if(totalVal)lines.push('มูลค่าพอร์ตรวม: $'+totalVal.toFixed(2));
+    if(totalVal)lines.push('พอร์ตรวม: $'+totalVal.toFixed(2)+' | P&L: '+((totalVal-totalCost)/totalCost*100).toFixed(2)+'%');
   }
   if(tickers.length){
-    lines.push('\n👀 Watchlist: '+tickers.join(', '));
+    lines.push('\n👀 Watchlist:');
     tickers.forEach(function(s){
       var d=sd[s];
-      if(d&&d.price&&!d.err)lines.push('• '+s+': $'+d.price.toFixed(2)+' ('+((d.chgP||0)>=0?'+':'')+((d.chgP||0).toFixed(2))+'%)');
+      if(d&&d.price&&!d.err){
+        var pts=(hd[s]||[]).filter(function(v){return v!=null;});
+        var rsi=calcRSI(pts),ema20=calcEMA(pts,20);
+        lines.push('• '+s+': $'+d.price.toFixed(2)
+          +' ('+(d.chgP>=0?'+':'')+((d.chgP||0).toFixed(2))+'%)'
+          +(rsi!=null?' RSI:'+rsi:'')
+          +(ema20?' EMA20:$'+ema20.toFixed(2):''));
+      }
     });
   }
   return lines.join('\n');
@@ -3509,8 +4015,19 @@ function sendChat(){
   // Typing indicator
   var typing=appendChatMsg('ai','กำลังคิด...');
   typing.style.color='var(--text3)';
-  var systemPrompt='คุณคือ AI Assistant สำหรับนักลงทุน พูดภาษาไทยเป็นหลัก กระชับ ตรงประเด็น ไม่เกิน 300 คำต่อคำตอบ\n\n'+buildChatContext();
+  var systemPrompt='คุณคือ AI Assistant สำหรับนักลงทุนหุ้น US ชาวไทยที่ใช้กลยุทธ์ DCA ระยะยาว พูดภาษาไทย กระชับ ถ้าถามเรื่องราคา/การซื้อ ให้อ้างอิง RSI EMA Support ที่มีในข้อมูลเสมอ ไม่เกิน 350 คำต่อคำตอบ\n\n'+buildChatContext();
   var messages=chatHistory.slice(-10); // เก็บแค่ 10 ข้อความล่าสุด
+  // แจ้ง user ถ้ามีข้อความที่ถูกตัดออก
+  if (chatHistory.length > 10) {
+    var truncEl = document.getElementById('chat-messages').querySelector('.chat-truncate-notice');
+    if (!truncEl) {
+      var notice = document.createElement('div');
+      notice.className = 'chat-truncate-notice';
+      notice.style.cssText = 'text-align:center;font-size:10px;color:var(--text3);padding:4px 0;margin-bottom:4px';
+      notice.textContent = '⚠ AI จำได้แค่ ' + Math.min(chatHistory.length,10) + ' ข้อความล่าสุด';
+      document.getElementById('chat-messages').insertBefore(notice, document.getElementById('chat-messages').firstChild);
+    }
+  }
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':CL,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
@@ -3956,7 +4473,25 @@ function runAIBudgetPlan(budgetUSD, budgetTHB, cur) {
   loadDCAState();
   var tgtLines = positions.map(function(p){ return p.sym+': target '+(tgtAlloc[p.sym]||'N/A')+'%'; }).join(', ');
 
-  var prompt = 'คุณเป็น AI ที่ปรึกษาการลงทุน DCA สำหรับนักลงทุนระยะยาวชาวไทย\n\nพอร์ตปัจจุบัน:\n'+portLines+'\n\nTarget Allocation: '+tgtLines+'\n\nงบประมาณ DCA รอบนี้: $'+budgetUSD.toFixed(2)+' (฿'+budgetTHB.toLocaleString('th-TH',{maximumFractionDigits:0})+') อัตรา ฿'+rate.toFixed(2)+'/USD\n\nวิเคราะห์และแนะนำว่าควรแบ่งงบนี้ซื้อหุ้นแต่ละตัวเท่าไหร่ โดยคำนึงถึง:\n- P&L ปัจจุบัน (หากติดลบมาก = โอกาส DCA)\n- การ rebalance ให้ใกล้ target\n- momentum วันนี้\n- ความหลากหลาย\n\nตอบเป็น JSON array เท่านั้น:\n[{"sym":"NVDA","usd":120.50,"reason":"ราคาต่ำกว่า target 8% เป็นโอกาสดี"},...]\nรวม usd ทุกตัวต้องเท่ากับ '+budgetUSD.toFixed(2)+' พอดี ไม่มี markdown';
+  var techBP = positions.map(function(p){
+    var d = sd[p.sym]; var price = d && d.price;
+    var pts = (hd[p.sym]||[]).filter(function(v){return v!=null;});
+    var rsi=calcRSI(pts),ema20=calcEMA(pts,20),boll=calcBollinger(pts),atr=calcATR(pts);
+    var sr=calcSupportResistance(pts);
+    return p.sym+': RSI '+(rsi!=null?rsi:'N/A')
+      +(ema20&&price?' '+(price>ema20?'above':'below')+' EMA20':'')
+      +(boll&&price?' Boll%B '+(((price-boll.lower)/(boll.upper-boll.lower))*100).toFixed(0)+'%':'')
+      +(atr?' ATR $'+atr:'')
+      +(sr.support?' Sup $'+sr.support:'')
+      +(sr.resistance?' Res $'+sr.resistance:'');
+  }).join('\n');
+  var prompt = 'คุณเป็น AI ที่ปรึกษาการลงทุน DCA + quantitative analyst สำหรับนักลงทุนระยะยาวชาวไทย'
+    +'\n\nพอร์ตปัจจุบัน:\n'+portLines
+    +'\n\nTechnical Indicators:\n'+techBP
+    +'\n\nTarget Allocation: '+tgtLines
+    +'\n\nงบประมาณ DCA รอบนี้: $'+budgetUSD.toFixed(2)+' (฿'+budgetTHB.toLocaleString('th-TH',{maximumFractionDigits:0})+') อัตรา ฿'+rate.toFixed(2)+'/USD'
+    +'\n\nแบ่งงบโดยคำนึง: RSI ต่ำ=โอกาสซื้อ, below EMA20=ราคา discount, Boll%B ต่ำ=oversold, rebalance ให้ใกล้ target, P&L ติดลบมาก=DCA เพิ่ม'
+    +'\n\nตอบ JSON array เท่านั้น:\n[{"sym":"NVDA","usd":120.50,"reason":"RSI 28 oversold + below EMA20 + target underweight 8%"},...]';
 
   callClaude(prompt).then(function(text){
     try {
@@ -4522,10 +5057,45 @@ function syncDCAToPortfolio(symFilter) {
 }
 
 function syncAllDCAToPortfolio() {
+  if (!dcaEntries.length) { toast('ไม่มีข้อมูล DCA', 'error'); return; }
   showConfirm('💹', 'Sync DCA → พอร์ต',
-    'ระบบจะนำข้อมูล DCA ทั้งหมดไปคำนวณต้นทุนเฉลี่ยและอัปเดตพอร์ต ต้องการดำเนินการ?',
+    'ระบบจะนำข้อมูล DCA ทั้งหมดไปคำนวณต้นทุนเฉลี่ยและอัปเดตพอร์ต\n⚠️ หุ้นที่มีอยู่แล้วจะถูกแทนที่ด้วยข้อมูล DCA ชุดนี้\nต้องการดำเนินการ?',
     function() {
-      syncDCAToPortfolio(null);
+      // รวม groups จาก dcaEntries ทั้งหมด
+      var groups = {};
+      dcaEntries.forEach(function(e) {
+        if (!groups[e.sym]) groups[e.sym] = [];
+        groups[e.sym].push(e);
+      });
+      var syms = Object.keys(groups);
+      if (!syms.length) return;
+
+      var updated = [], added = [];
+      syms.forEach(function(sym) {
+        var entries   = groups[sym];
+        var totalQty  = entries.reduce(function(s,e){ return s+e.qty; }, 0);
+        var totalCost = entries.reduce(function(s,e){ return s+(e.price*e.qty); }, 0);
+        var avgCost   = totalCost / totalQty;
+        var existing  = positions.findIndex(function(p){ return p.sym === sym; });
+        if (existing >= 0) {
+          positions[existing] = { sym: sym, qty: parseFloat(totalQty.toFixed(6)), cost: parseFloat(avgCost.toFixed(4)) };
+          updated.push(sym);
+        } else {
+          positions.push({ sym: sym, qty: parseFloat(totalQty.toFixed(6)), cost: parseFloat(avgCost.toFixed(4)) });
+          if (tickers.indexOf(sym) < 0) tickers.push(sym);
+          added.push(sym);
+        }
+      });
+
+      save(); renderPort(); renderWatch();
+      logSync(dcaEntries, groups, updated, added);
+      renderSyncHistory();
+
+      var msg = '';
+      if (updated.length) msg += 'แทนที่: ' + updated.join(', ') + ' ';
+      if (added.length)   msg += 'เพิ่มใหม่: ' + added.join(', ');
+      toast(msg.trim() + ' ✓');
+
       // Clear all DCA entries after sync
       dcaEntries = [];
       saveDCAState();
@@ -4674,7 +5244,30 @@ function aiMarketBriefing() {
   });
   if (portVal) lines.push('\nพอร์ตรวม: $' + portVal.toFixed(2) + ' (P&L: ' + ((portVal-portCost)/portCost*100).toFixed(2) + '%)');
 
-  var prompt = 'คุณเป็น AI วิเคราะห์การลงทุนสำหรับนักลงทุนไทยที่ลงทุนหุ้น US\n\n' + lines.join('\n') + '\n\nสรุปภาพรวมตลาดวันนี้เป็นภาษาไทย ครอบคลุม:\n1. ภาพรวมตลาด (ขึ้น/ลง/ทิศทาง)\n2. หุ้นเด่น/หุ้นที่น่าสนใจ\n3. สัญญาณที่นักลงทุนระยะยาวควรระวัง\n4. แนะนำ 1-2 ประเด็นสำคัญสำหรับนักลงทุน DCA\nตอบกระชับ ใช้ emoji ช่วยอ่านง่าย ไม่เกิน 300 คำ';
+  var techLines = [];
+  tickers.forEach(function(sym) {
+    var d = sd[sym];
+    if (!d || !d.price) return;
+    var pts = (hd[sym]||[]).filter(function(v){return v!=null;});
+    var rsi = calcRSI(pts), ema20 = calcEMA(pts,20), atr = calcATR(pts);
+    var sr = calcSupportResistance(pts);
+    techLines.push(sym+': $'+d.price.toFixed(2)
+      +' ('+(d.chgP>=0?'+':'')+(d.chgP||0).toFixed(2)+'%)'
+      +(rsi!=null?' RSI:'+rsi+(rsi<30?'[OS]':rsi>70?'[OB]':''):'')
+      +(ema20?' EMA20:$'+ema20.toFixed(2)+' '+(d.price>ema20?'↑':'↓'):'')
+      +(atr?' ATR:$'+atr:'')
+      +(sr.support?' Sup:$'+sr.support:'')
+      +(sr.resistance?' Res:$'+sr.resistance:''));
+  });
+  var prompt = 'คุณเป็น macro strategist + technical analyst สำหรับนักลงทุนไทยใน US stocks\n\n'
+    + 'Watchlist พร้อม indicators:\n' + techLines.join('\n')
+    + (portVal ? '\nพอร์ตรวม: $'+portVal.toFixed(2)+' P&L: '+((portVal-portCost)/portCost*100).toFixed(2)+'%' : '')
+    + '\n\nสรุปภาพรวมตลาดวันนี้ อ้างอิงตัวเลขจริง:\n'
+    + '📈 ภาพรวมตลาด (trend จาก EMA20):\n'
+    + '🔍 หุ้นน่าสนใจ (RSI oversold/momentum ดี):\n'
+    + '⚠️ ระวัง (RSI overbought/ใกล้ resistance):\n'
+    + '💡 แนะนำ DCA (ตัวไหน indicator เหมาะ):\n'
+    + 'ไม่เกิน 300 คำ';
 
   callClaude(prompt).then(function(text) {
     body.textContent = text;
@@ -4714,7 +5307,21 @@ function aiDCAPlan() {
     }).join('\n');
   }
 
-  var prompt = 'คุณเป็นที่ปรึกษา DCA สำหรับนักลงทุนระยะยาวชาวไทย\n\nพอร์ตปัจจุบัน:\n' + portInfo + dcaInfo + '\n\nแนะนำแผน DCA รอบถัดไป (สมมติมีเงิน $500 จะลงทุน):\nสำหรับแต่ละหุ้นในพอร์ต ระบุ:\n1. ควรซื้อเพิ่มหรือไม่\n2. สัดส่วนที่แนะนำ (จาก $500)\n3. เหตุผลสั้น ๆ\nตอบเป็น JSON array:\n[{"sym":"NVDA","amount":150,"reason":"ราคาลดลง 5% จาก ATH เป็นโอกาส DCA"},...]\nตอบ JSON เท่านั้น ไม่มี markdown';
+  var techDCA = positions.map(function(p){
+    var d = sd[p.sym]; var price = d && d.price;
+    var pts = (hd[p.sym]||[]).filter(function(v){return v!=null;});
+    var rsi=calcRSI(pts),ema20=calcEMA(pts,20),boll=calcBollinger(pts),atr=calcATR(pts);
+    var sr=calcSupportResistance(pts);
+    return p.sym+': RSI '+(rsi!=null?rsi:'N/A')
+      +(ema20&&price?' | '+(price>ema20?'above':'below')+' EMA20 $'+ema20.toFixed(2):'')
+      +(boll&&price?' | Boll%B '+(((price-boll.lower)/(boll.upper-boll.lower))*100).toFixed(0)+'%':'')
+      +(atr?' | ATR $'+atr:'')
+      +(sr.support?' | Sup $'+sr.support:'');
+  }).join('\n');
+  var prompt = 'คุณเป็นที่ปรึกษา DCA + quantitative analyst สำหรับนักลงทุนระยะยาวชาวไทย\n\nพอร์ตปัจจุบัน:\n' + portInfo + dcaInfo
+    + '\n\nTechnical Indicators:\n' + techDCA
+    + '\n\nแนะนำแผน DCA (สมมติเงิน $500) ให้น้ำหนัก: RSI ต่ำ=โอกาส, below EMA20=discount, Boll%B ต่ำ=oversold, ATR สูง=risk สูง'
+    + '\nตอบ JSON array เท่านั้น [{"sym":"NVDA","amount":150,"reason":"RSI 28 oversold + below EMA20"},...]';
 
   callClaude(prompt).then(function(text) {
     try {
@@ -4883,6 +5490,7 @@ function installApp(){
 window.addEventListener('appinstalled', function(){
   toast('Stock Tracker Pro ติดตั้งแล้ว ✓', 'success');
   deferredPrompt = null;
+});
 
 // ── PAGE VISIBILITY — หยุด timer เมื่อ tab ไม่ active ──
 document.addEventListener('visibilitychange', function(){
@@ -4903,7 +5511,6 @@ document.addEventListener('visibilitychange', function(){
       },1000);
     }
   }
-});
 });
 
 // ── 3D TILT + SPARKLINE DRAW-ON + NUMBER COUNTUP ──
@@ -4956,13 +5563,20 @@ function triggerSparkDrawOn(){
 }
 
 // Number countup for price when first rendered
-function animatePriceCountUp(card, targetPrice, duration){
+function animatePriceCountUp(card, targetPrice, duration, fromPrice){
   var el=card.querySelector('.pbig');
   if(!el)return;
-  var start=targetPrice*0.97;
+  // เริ่มจากราคาเก่าถ้ามี ไม่งั้นเริ่มจาก 97%
+  var start=fromPrice!=null?fromPrice:targetPrice*0.97;
   var startTime=null;
   var sym=card.dataset.sym;
   var d=sd[sym];
+  // flash สีตาม direction
+  if(fromPrice!=null){
+    el.style.transition='color .15s';
+    el.style.color=targetPrice>fromPrice?'var(--green)':targetPrice<fromPrice?'var(--red)':'';
+    setTimeout(function(){el.style.color='';},600);
+  }
   function step(ts){
     if(!startTime)startTime=ts;
     var p=Math.min((ts-startTime)/duration,1);
@@ -4998,6 +5612,127 @@ function skeletonCardHTML(){
 
 
 
+
+
+
+// ── KEYBOARD SHORTCUTS ──
+document.addEventListener('keydown', function(e) {
+  // ไม่ทำงานถ้า focus อยู่ที่ input/textarea
+  var tag = document.activeElement ? document.activeElement.tagName : '';
+  var isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+  // Esc — ปิด modal ที่เปิดอยู่
+  if (e.key === 'Escape') {
+    var openMov = document.querySelector('.mov.open');
+    if (openMov) {
+      var closeBtn = openMov.querySelector('[onclick*="closeModal"],[onclick*="closeConfirm"]');
+      if (openMov.id === 'confirm-modal') closeConfirm();
+      else closeModal();
+      return;
+    }
+    // ปิด chat popup
+    var chat = document.getElementById('chat-popup');
+    if (chat && chat.style.display !== 'none') { toggleChatPopup(); return; }
+    // clear filter
+    if (_watchFilter) {
+      _watchFilter = '';
+      var fi = document.getElementById('watch-filter');
+      if (fi) fi.value = '';
+      renderWatch();
+      return;
+    }
+  }
+
+  if (isInput) return; // หลังจาก Esc แล้วค่อย block input อื่น
+
+  // R — refresh
+  if (e.key === 'r' || e.key === 'R') {
+    if (!e.ctrlKey && !e.metaKey) { fetchAll(); toast('Refreshing...', 'info'); }
+    return;
+  }
+
+  // / — focus filter
+  if (e.key === '/') {
+    e.preventDefault();
+    var fi = document.getElementById('watch-filter');
+    if (fi) {
+      // switch to watch tab first
+      var watchTab = document.querySelector('.tab.active');
+      showTab('watch', document.querySelector('.tabs .tab'));
+      fi.focus();
+      fi.select();
+    }
+    return;
+  }
+
+  // 1-9 — switch tab
+  if (e.key >= '1' && e.key <= '9' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    var tabOrder = ['watch','port','tax','alerts','news','heat','alloc','tv','earnings'];
+    var idx = parseInt(e.key) - 1;
+    if (idx < tabOrder.length) {
+      var tabs = document.querySelectorAll('.tabs .tab');
+      if (tabs[idx]) { showTab(tabOrder[idx], tabs[idx]); tabs[idx].scrollIntoView({block:'nearest',inline:'nearest'}); }
+    }
+    return;
+  }
+
+  // ? — แสดง shortcut hint
+  if (e.key === '?') {
+    toast('R=Refresh  /=Filter  1-9=Tab  Esc=ปิด', 'info');
+    return;
+  }
+});
+
+// ── PULL TO REFRESH ──
+(function(){
+  var startY=0, pulling=false, threshold=65, _ptrActive=false;
+  var ind=document.getElementById('ptr-indicator');
+  var txt=document.getElementById('ptr-text');
+  if(!ind)return;
+
+  document.addEventListener('touchstart',function(e){
+    if(window.scrollY===0&&e.touches.length===1){
+      startY=e.touches[0].clientY;
+      pulling=true;
+    }
+  },{passive:true});
+
+  document.addEventListener('touchmove',function(e){
+    if(!pulling||_ptrActive)return;
+    var dy=e.touches[0].clientY-startY;
+    if(dy>10&&window.scrollY===0){
+      ind.classList.add('ptr-visible');
+      if(dy>threshold){
+        txt.textContent='ปล่อยเพื่อรีเฟรช';
+        ind.querySelector('.ptr-arrow').textContent='↑';
+      } else {
+        txt.textContent='ดึงเพื่อรีเฟรช';
+        ind.querySelector('.ptr-arrow').textContent='↓';
+      }
+    }
+  },{passive:true});
+
+  document.addEventListener('touchend',function(e){
+    if(!pulling)return;
+    pulling=false;
+    var dy=e.changedTouches[0].clientY-startY;
+    if(dy>threshold&&window.scrollY===0&&!_ptrActive){
+      _ptrActive=true;
+      ind.classList.add('ptr-loading');
+      txt.textContent='กำลังโหลด...';
+      ind.querySelector('.ptr-arrow').textContent='⟳';
+      fetchAll();
+      setTimeout(function(){
+        ind.classList.remove('ptr-visible','ptr-loading');
+        txt.textContent='ดึงเพื่อรีเฟรช';
+        ind.querySelector('.ptr-arrow').textContent='↓';
+        _ptrActive=false;
+      },1500);
+    } else {
+      ind.classList.remove('ptr-visible');
+    }
+  },{passive:true});
+})();
 
 </script>
 
