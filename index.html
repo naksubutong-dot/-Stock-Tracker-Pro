@@ -460,7 +460,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 </div>
 
 <!-- APP -->
-<div id="app" style="display: block;">
+<div id="app" style="display:none">
   <header>
     <div class="hl">
       <span style="font-size:22px">📈</span>
@@ -3671,6 +3671,15 @@ function exportHTML(){
   html = html.replace(
     /var FH='.*?', CL='.*?',/,
     "var FH='', CL='',"
+  );
+  // Reset inline styles ของ #app และ #setup ให้กลับสู่สถานะเริ่มต้น
+  html = html.replace(
+    /<div id="app" style="[^"]*">/,
+    '<div id="app" style="display:none">'
+  );
+  html = html.replace(
+    /<div id="setup" style="[^"]*">/,
+    '<div id="setup">'
   );
 
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
