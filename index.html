@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="StockPro">
-<link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#3b82f6"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="StockPro">
+<link rel="manifest" id="manifest-placeholder">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Stock Tracker Pro</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
@@ -14,7 +14,7 @@
 :root{--bg:#0a0e1a;--bg2:#111827;--bg3:#1a2235;--bg4:#222f45;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.15);--text:#e2e8f0;--text2:#94a3b8;--text3:#4b5563;--green:#10b981;--gbg:rgba(16,185,129,0.12);--gbd:rgba(16,185,129,0.28);--red:#ef4444;--rbg:rgba(239,68,68,0.12);--rbd:rgba(239,68,68,0.28);--amber:#f59e0b;--abg:rgba(245,158,11,0.12);--acc:#3b82f6;--acbg:rgba(59,130,246,0.12);--acbd:rgba(59,130,246,0.3);--pur:#8b5cf6;--pubg:rgba(139,92,246,0.12);--shadow:0 8px 32px rgba(0,0,0,0.5);--r:12px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 [data-theme="light"]{--bg:#f0f4f8;--bg2:#fff;--bg3:#f8fafc;--bg4:#e8edf2;--border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.16);--text:#0f172a;--text2:#475569;--text3:#94a3b8;--shadow:0 4px 20px rgba(0,0,0,0.1)}
 *{margin:0;padding:0;box-sizing:border-box}
-html{font-size:110%}
+html{zoom:1.1}
 
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
 input,select,button{font-family:var(--font)}
@@ -284,12 +284,8 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 @media(max-width:700px){
   .mobnav{display:flex;}
   body{padding-bottom:calc(68px + env(safe-area-inset-bottom));}
-  main{padding-bottom:calc(72px + env(safe-area-inset-bottom));}
+  main{padding-bottom:8px;}
   .tabs{display:none;}
-  header{padding:8px 12px;gap:6px;}
-  #ai-model-sel{display:none;}
-  .hr .btn:not(#privacy-btn):not([onclick*="showPINSetup"]):not([onclick*="fetchAll"]):not([onclick*="toggleTheme"]):not(#install-btn){display:none;}
-  .hr span:not(#mkt-badge):not(#upd){display:none;}
 }
 
 /* ── DRAG AND DROP ── */
@@ -440,7 +436,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 <div id="fetch-progress"><div id="fetch-progress-bar"></div><div id="fetch-progress-glow"></div></div>
 
 <!-- SETUP -->
-<div id="setup">
+<div id="setup" style="display: none;">
   <div class="sbox">
     <div style="font-size:38px">📈</div>
     <h1>Stock Tracker Pro</h1>
@@ -460,7 +456,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app" style="display: block;">
   <header>
     <div class="hl">
       <span style="font-size:22px">📈</span>
@@ -486,7 +482,6 @@ body.privacy-mode .private:hover{filter:blur(6px)}
       <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(this)">
       <button class="btn" id="privacy-btn" onclick="togglePrivacy()" title="Privacy Mode — ซ่อนตัวเลขทั้งหมด" style="font-size:14px;padding:4px 10px">👁</button>
       <button class="btn" onclick="showPINSetup()" title="PIN Lock & Settings" style="font-size:14px;padding:4px 10px">🔐</button>
-      <select id="ai-model-sel" onchange="setAIModel(this.value)" title="AI Model" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;padding:4px 6px;border-radius:7px;cursor:pointer;outline:none"><option value="claude-haiku-4-5-20251001">⚡ Haiku</option><option value="claude-sonnet-4-6">🧠 Sonnet</option><option value="claude-opus-4-6">🚀 Opus</option></select>
       <button class="lbtn" onclick="changeKey()">Key</button>
       <button class="btn" id="install-btn" style="display:none;background:var(--gbg);color:var(--green);border-color:var(--gbd)" onclick="installApp()">📲 ติดตั้งแอป</button>
     </div>
@@ -559,8 +554,6 @@ body.privacy-mode .private:hover{filter:blur(6px)}
         <button class="btn" onclick="exportCSV()">📋 CSV</button>
         <button class="btn bp" id="ai-port-btn" style="display: flex;" onclick="aiAnalyzePortfolio()">🤖 AI วิเคราะห์พอร์ต</button>
         <button class="btn" style="color:var(--acc);border-color:var(--acbd)" onclick="showShareCard()">📤 Share Card</button>
-        <button class="btn" style="color:var(--acc);border-color:var(--acbd)" onclick="backupData()">☁️ Backup</button>
-        <button class="btn" style="color:var(--amber);border-color:rgba(245,158,11,.3)" onclick="document.getElementById('restore-input').click()">📂 Restore</button>
       </div>
       <div class="fbox" id="add-pos">
         <div class="sec-lbl">เพิ่มหุ้นในพอร์ต</div>
@@ -945,7 +938,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
 
 <!-- SHARE CARD MODAL -->
 <div id="share-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
-  <div style="background:var(--bg2);border-radius:20px;width:100%;max-width:420px;padding:20px;position:relative;margin:auto">
+  <div style="background:var(--bg2);border-radius:16px;width:100%;max-width:500px;padding:20px;position:relative;margin:auto">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
       <span style="font-size:18px">📤</span>
       <div style="font-size:14px;font-weight:700;flex:1">Share Card</div>
@@ -965,7 +958,7 @@ body.privacy-mode .private:hover{filter:blur(6px)}
     </div>
 
     <!-- Card preview -->
-    <div id="sc-preview" style="margin-bottom:16px;border-radius:12px;overflow:hidden;display:flex;justify-content:center"></div>
+    <div id="sc-preview" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
 
     <!-- Actions -->
     <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1182,7 +1175,6 @@ function closeConfirm(){
 
 // ── STATE ──
 var FH='', CL='', CUR='USD', THB_RATE=36, isDark=true, sortM='def', portSortM='val', portSortAsc=false;
-var AI_MODEL='claude-opus-4-6';
 var tickers=[];
 var _defaultTickers=[];
 var pinned=new Set(), sd={}, hd={}, positions=[], alerts=[], cdv=60, tmr=null, curSym='';
@@ -1207,10 +1199,7 @@ var LOGOS={
   INTC:'https://assets.parqet.com/logos/symbol/INTC',
   AVGO:'https://assets.parqet.com/logos/symbol/AVGO',
   TSM:'https://assets.parqet.com/logos/symbol/TSM',
-  SOFI:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 fill=%22%2300AEEF%22/%3E%3Ccircle cx=%2227%22 cy=%2227%22 r=%2212%22 fill=%22white%22/%3E%3Ccircle cx=%2250%22 cy=%2227%22 r=%2212%22 fill=%22white%22/%3E%3Ccircle cx=%2273%22 cy=%2227%22 r=%2212%22 fill=%22none%22 stroke=%22white%22 stroke-width=%224%22/%3E%3Ccircle cx=%2227%22 cy=%2250%22 r=%2212%22 fill=%22white%22/%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2212%22 fill=%22none%22 stroke=%22white%22 stroke-width=%224%22/%3E%3Ccircle cx=%2273%22 cy=%2250%22 r=%2212%22 fill=%22white%22/%3E%3Ccircle cx=%2227%22 cy=%2273%22 r=%2212%22 fill=%22none%22 stroke=%22white%22 stroke-width=%224%22/%3E%3Ccircle cx=%2250%22 cy=%2273%22 r=%2212%22 fill=%22white%22/%3E%3Ccircle cx=%2273%22 cy=%2273%22 r=%2212%22 fill=%22white%22/%3E%3C/svg%3E',
-  ETH:'https://assets.parqet.com/logos/symbol/ETH?format=png',
-  SOL:'https://assets.parqet.com/logos/symbol/SOL?format=png',
-  BTC:'https://assets.parqet.com/logos/symbol/BTC?format=png',
+  SOFI:'https://assets.parqet.com/logos/symbol/SOFI',
 };
 var COLORS={ETH:'#627eea',SOL:'#9945ff',BNB:'#f0b90b',XRP:'#00aae4',ADA:'#0033ad',AVAX:'#e84142',DOGE:'#c2a633',DOT:'#e6007a',MATIC:'#8247e5',LINK:'#375bd2',LTC:'#bfbbbb',NVDA:'#76b900',GOOG:'#4285F4',GOOGL:'#4285F4',AMZN:'#FF9900',QQQ:'#7c3aed',VOO:'#0f766e',MSFT:'#00a4ef',AAPL:'#6b7280',TSLA:'#e31937',META:'#0668E1',AMD:'#ED1C24',MU:'#E52B6A',SPY:'#0284c7',PLTR:'#6366f1',SMCI:'#f59e0b',INTC:'#0071c5',AVGO:'#cc0000',SOFI:'#0080ff',GLD:'#f59e0b',IAU:'#d97706',GDX:'#b45309',SLV:'#94a3b8',USO:'#64748b',BTC:'#f7931a'};
 var NAMES={ETH:'Ethereum',SOL:'Solana',BNB:'BNB Chain',XRP:'Ripple',ADA:'Cardano',AVAX:'Avalanche',DOGE:'Dogecoin',DOT:'Polkadot',MATIC:'Polygon',LINK:'Chainlink',LTC:'Litecoin',NVDA:'NVIDIA',GOOG:'Alphabet',GOOGL:'Alphabet',AMZN:'Amazon',QQQ:'Invesco QQQ',VOO:'Vanguard S&P500',MSFT:'Microsoft',AAPL:'Apple',TSLA:'Tesla',META:'Meta',AMD:'AMD',MU:'Micron',SPY:'SPDR S&P500',PLTR:'Palantir',SMCI:'Super Micro',INTC:'Intel',AVGO:'Broadcom',SOFI:'SoFi Technologies',GLD:'SPDR Gold ETF',IAU:'iShares Gold ETF',GDX:'VanEck Gold Miners',SLV:'iShares Silver ETF',USO:'US Oil Fund ETF',BTC:'Bitcoin USD'};
@@ -1275,11 +1264,6 @@ function go(){
 
 function startApp(){
   loadState();
-  // Load saved AI model
-  var savedModel = localStorage.getItem('stp4_aimodel');
-  if(savedModel) AI_MODEL = savedModel;
-  var sel = document.getElementById('ai-model-sel');
-  if(sel) sel.value = AI_MODEL;
   // Apply saved theme
   document.documentElement.setAttribute('data-theme',isDark?'dark':'light');
   document.getElementById('tbtn').textContent=isDark?'🌙':'☀️';
@@ -1481,13 +1465,6 @@ function changeKey(){
   clearInterval(tmr);
   document.getElementById('app').style.display='none';
   document.getElementById('setup').style.display='flex';
-}
-
-function setAIModel(m){
-  AI_MODEL=m;
-  localStorage.setItem('stp4_aimodel',m);
-  var label={'claude-haiku-4-5-20251001':'⚡ Haiku','claude-sonnet-4-6':'🧠 Sonnet','claude-opus-4-6':'🚀 Opus'}[m]||m;
-  toast('AI Model: '+label);
 }
 
 // ── THEME ──
@@ -1855,12 +1832,14 @@ function fchg(c,p){
 
 // ── WATCHLIST ──
 function logoHTML(sym,co,ini){
+
   var url=LOGOS[sym]
     || ('https://assets.parqet.com/logos/symbol/'+sym+'?format=png');
-  return '<div class="cdot" style="background:#fff;overflow:hidden;position:relative">'
+
+  return '<div class="cdot" style="background:#fff;padding:3px;overflow:hidden">'
     +'<img src="'+url+'" '
-    +'style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain" '
-    +'onerror="this.remove();this.parentNode.style.background=\''+co+'\';this.parentNode.style.display=\'flex\';this.parentNode.style.alignItems=\'center\';this.parentNode.style.justifyContent=\'center\';this.parentNode.innerHTML=\''+ini+'\'">'
+    +'style="width:100%;height:100%;object-fit:contain;border-radius:5px" '
+    +'onerror="this.parentNode.style.background=\''+co+'\';this.parentNode.style.color=\'#fff\';this.parentNode.style.display=\'flex\';this.parentNode.style.alignItems=\'center\';this.parentNode.style.justifyContent=\'center\';this.parentNode.innerHTML=\''+ini+'\'">'
     +'</div>';
 }
 function cardH(sym){
@@ -2588,7 +2567,7 @@ function renderHeat() {
 
 // ── AI ──
 function callClaude(prompt){
-  var body=JSON.stringify({model:AI_MODEL,max_tokens:2000,messages:[{role:'user',content:prompt}]});
+  var body=JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,messages:[{role:'user',content:prompt}]});
   return fetch('https://claude-proxy.naksubutong.workers.dev/',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':CL,'anthropic-version':'2023-06-01'},
@@ -2599,23 +2578,6 @@ function callClaude(prompt){
   }).then(function(d){
     return(d.content&&d.content[0]&&d.content[0].text)||'ไม่ได้รับการตอบกลับ';
   });
-}
-
-function aiAnalyzePortfolio(){
-  if(!CL){toast("ต้องใส่ Claude API Key ก่อน","err");return;}
-  if(!positions||!positions.length){toast("ยังไม่มีหุ้นในพอร์ต","err");return;}
-  var panel=document.getElementById("ai-port-panel");
-  var body=document.getElementById("ai-port-body");
-  if(panel.style.display==="block"){panel.style.display="none";return;}
-  panel.style.display="block";
-  body.innerHTML='<div class="aiload"><span class="spin">⟳</span> AI กำลังวิเคราะห์พอร์ตโฟลิโอ...</div>';
-  var totalCost=0,totalVal=0;
-  positions.forEach(function(p){var d=sd[p.sym]||{};var price=d.price||p.cost;totalCost+=p.cost*p.qty;totalVal+=price*p.qty;});
-  var posLines=positions.map(function(p){var d=sd[p.sym]||{};var price=d.price||p.cost;var val=price*p.qty;var cost=p.cost*p.qty;var pnl=val-cost;var pnlP=cost>0?((pnl/cost)*100):0;var weight=totalVal>0?((val/totalVal)*100):0;return p.sym+"("+nam(p.sym)+"): $"+price.toFixed(2)+" | ต้นทุน $"+p.cost.toFixed(2)+" | จำนวน "+p.qty+" | มูลค่า $"+val.toFixed(2)+" | P&L "+(pnl>=0?"+":"")+pnl.toFixed(2)+"("+(pnlP>=0?"+":"")+pnlP.toFixed(1)+"%) | สัดส่วน "+weight.toFixed(1)+"%";}).join("\n");
-  var totalPnl=totalVal-totalCost;
-  var totalPnlP=totalCost>0?((totalPnl/totalCost)*100):0;
-  var prompt="คุณเป็น Portfolio Analyst ผู้เชี่ยวชาญ วิเคราะห์พอร์ตหุ้น US สำหรับนักลงทุนไทย ตอบภาษาไทย\n\n📊 สรุปพอร์ต:\n• ต้นทุนรวม: $"+totalCost.toFixed(2)+"\n• มูลค่าปัจจุบัน: $"+totalVal.toFixed(2)+"\n• กำไร/ขาดทุน: "+(totalPnl>=0?"+":"")+totalPnl.toFixed(2)+" ("+(totalPnlP>=0?"+":"")+totalPnlP.toFixed(1)+"%)\n\n📋 รายละเอียด:\n"+posLines+"\n\nวิเคราะห์:\n🎯 ภาพรวมพอร์ต + performance\n⚖️ การกระจายความเสี่ยง (Diversification) — overweight/underweight\n🏆 จุดแข็ง — หุ้นที่ดีควรถือต่อ\n⚠️ จุดเสี่ยง — หุ้นน่าเป็นห่วง\n💡 คำแนะนำ rebalance และปรับพอร์ต\n\n⚠️ ไม่ใช่คำแนะนำการลงทุน";
-  callClaude(prompt).then(function(txt){body.innerHTML=txt.replace(/\n/g,"<br>");}).catch(function(e){body.innerHTML='<span style="color:var(--red)">❌ '+e.message+"</span>";});
 }
 
 function aiAnalyzeStock(){
@@ -3013,49 +2975,6 @@ function aiBuyAdvisor() {
 }
 
 
-var scMode = 'port';
-var scSym = '';
-
-function showShareCard() {
-  var modal = document.getElementById('share-modal');
-  modal.style.display = 'flex';
-  scMode = 'port';
-  // populate stock buttons
-  var btns = document.getElementById('sc-stock-btns');
-  btns.innerHTML = positions.map(function(p){
-    return '<button class="btn" style="font-size:11px;padding:3px 9px" onclick="setShareSym(\''+p.sym+'\')">'+p.sym+'</button>';
-  }).join('');
-  document.getElementById('sc-stock-sel').style.display = 'none';
-  document.getElementById('sc-mode-port').className = 'btn ba';
-  document.getElementById('sc-mode-stock').className = 'btn';
-  renderShareCard();
-}
-
-function closeShareCard() {
-  document.getElementById('share-modal').style.display = 'none';
-}
-
-function setShareMode(m) {
-  scMode = m;
-  document.getElementById('sc-mode-port').className = m==='port' ? 'btn ba' : 'btn';
-  document.getElementById('sc-mode-stock').className = m==='stock' ? 'btn ba' : 'btn';
-  document.getElementById('sc-stock-sel').style.display = m==='stock' ? 'block' : 'none';
-  if (m==='stock' && !scSym && positions.length) {
-    scSym = positions[0].sym;
-    var firstBtn = document.querySelector('#sc-stock-btns .btn');
-    if (firstBtn) firstBtn.className = 'btn ba';
-  }
-  renderShareCard();
-}
-
-function setShareSym(sym) {
-  scSym = sym;
-  document.querySelectorAll('#sc-stock-btns .btn').forEach(function(b){
-    b.className = b.textContent===sym ? 'btn ba' : 'btn';
-  });
-  renderShareCard();
-}
-
 function renderShareCard() {
   var preview = document.getElementById('sc-preview');
   var now = new Date();
@@ -3069,257 +2988,166 @@ function renderShareCard() {
   }
 }
 
-
-function scLogoImg(sym, c, size) {
-  size = size || 36;
-  var url = LOGOS[sym] || ('https://assets.parqet.com/logos/symbol/' + sym + '?format=png');
-  var ini = sym.slice(0,3);
-  var r = (size*0.28).toFixed(0);
-  var fs = (size*0.3).toFixed(0);
-  return '<div style="width:'+size+'px;height:'+size+'px;min-width:'+size+'px;min-height:'+size+'px;background:#fff;border-radius:'+r+'px;overflow:hidden;flex-shrink:0;position:relative;box-sizing:border-box;box-shadow:0 2px 8px rgba(0,0,0,0.35)">'
-    +'<img src="'+url+'" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain" '
-    +'onerror="this.remove();this.parentNode.style.background=\''+c+'\';this.parentNode.style.display=\'flex\';this.parentNode.style.alignItems=\'center\';this.parentNode.style.justifyContent=\'center\';this.parentNode.innerHTML=\'<span style=\"font-size:'+fs+'px;font-weight:800;color:#fff;letter-spacing:-0.5px\">'+ini+'</span>\'">'
-    +'</div>';
-}
-
 function buildPortCard(dateStr, rate) {
+  // Calc totals
   var totalVal=0, totalCost=0, todayPL=0;
   positions.forEach(function(p){
     var price = sd[p.sym] && sd[p.sym].price;
-    if(price){ totalVal += price*p.qty; }
+    if (price) { totalVal += price*p.qty; }
     totalCost += p.cost*p.qty;
-    if(sd[p.sym] && sd[p.sym].chg!=null) todayPL += sd[p.sym].chg*p.qty;
+    if (sd[p.sym] && sd[p.sym].chg!=null) todayPL += sd[p.sym].chg*p.qty;
   });
-  var pl   = totalVal - totalCost;
-  var plP  = totalCost>0 ? (pl/totalCost)*100 : 0;
-  var plC  = pl>=0 ? '#10b981' : '#ef4444';
-  var todC = todayPL>=0 ? '#10b981' : '#ef4444';
-  var plBg = pl>=0 ? 'rgba(16,185,129,0.15)' : 'rgba(239,68,68,0.15)';
-  var todBg= todayPL>=0 ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+  var pl  = totalVal-totalCost;
+  var plP = totalCost>0 ? (pl/totalCost)*100 : 0;
+  var plC = pl>=0 ? '#10b981' : '#ef4444';
+  var todC= todayPL>=0 ? '#10b981' : '#ef4444';
 
+  // Top 3 holdings
   var sorted = positions.slice().sort(function(a,b){
-    var va=(sd[a.sym]&&sd[a.sym].price)?sd[a.sym].price*a.qty:0;
-    var vb=(sd[b.sym]&&sd[b.sym].price)?sd[b.sym].price*b.qty:0;
+    var va = (sd[a.sym]&&sd[a.sym].price) ? sd[a.sym].price*a.qty : 0;
+    var vb = (sd[b.sym]&&sd[b.sym].price) ? sd[b.sym].price*b.qty : 0;
     return vb-va;
   }).slice(0,4);
 
-  var holdingsHtml = sorted.map(function(p){
-    var price = sd[p.sym]&&sd[p.sym].price || 0;
-    var val   = price*p.qty;
-    var wt    = totalVal>0?(val/totalVal)*100:0;
-    var pnlP  = p.cost>0?((price-p.cost)/p.cost)*100:0;
+  var holdingsHtml = sorted.map(function(p) {
+    var price = sd[p.sym] && sd[p.sym].price;
+    var val   = price ? price*p.qty : 0;
+    var wt    = totalVal>0 ? (val/totalVal)*100 : 0;
+    var pnlP  = p.cost>0 ? ((price-p.cost)/p.cost)*100 : 0;
     var c     = col(p.sym);
-    var pnlC  = pnlP>=0?'#10b981':'#ef4444';
-    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'
-      +scLogoImg(p.sym, c, 32)
-      +'<div style="flex:1;min-width:0">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-          +'<span style="font-size:12px;font-weight:700;color:#fff">'+p.sym+'</span>'
-          +'<span style="font-size:11px;font-weight:700;color:'+pnlC+'">'+(pnlP>=0?'+':'')+pnlP.toFixed(1)+'%</span>'
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">'
+      +'<div style="width:26px;height:26px;background:'+c+';border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0">'+p.sym.slice(0,2)+'</div>'
+      +'<div style="flex:1">'
+        +'<div style="display:flex;justify-content:space-between;margin-bottom:3px">'
+          +'<span style="font-size:12px;font-weight:600;color:#fff">'+p.sym+'</span>'
+          +'<span style="font-size:12px;font-weight:700;color:'+(pnlP>=0?'#10b981':'#ef4444')+'">'+(pnlP>=0?'+':'')+pnlP.toFixed(1)+'%</span>'
         +'</div>'
-        +'<div style="height:3px;background:rgba(255,255,255,0.07);border-radius:2px;position:relative">'
-          +'<div style="height:100%;width:'+Math.min(wt,100).toFixed(1)+'%;background:linear-gradient(90deg,'+c+','+c+'99);border-radius:2px;transition:width .3s"></div>'
+        +'<div style="height:3px;background:rgba(255,255,255,0.08);border-radius:2px">'
+          +'<div style="height:100%;width:'+Math.min(wt,100)+'%;background:'+c+';border-radius:2px"></div>'
         +'</div>'
       +'</div>'
-      +'<span style="font-size:10px;color:rgba(255,255,255,0.35);min-width:36px;text-align:right">'+wt.toFixed(1)+'%</span>'
-    +'</div>';
+      +'<span style="font-size:11px;color:rgba(255,255,255,0.4);min-width:34px;text-align:right">'+wt.toFixed(1)+'%</span>'
+      +'</div>';
   }).join('');
 
-  // mini bar chart for all positions
-  var allSorted = positions.slice().sort(function(a,b){
-    var va=(sd[a.sym]&&sd[a.sym].price)?sd[a.sym].price*a.qty:0;
-    var vb=(sd[b.sym]&&sd[b.sym].price)?sd[b.sym].price*b.qty:0;
-    return vb-va;
-  });
-  var barHtml = allSorted.map(function(p){
-    var price=sd[p.sym]&&sd[p.sym].price||0;
-    var wt=totalVal>0?(price*p.qty/totalVal)*100:0;
-    return '<div style="flex:'+wt.toFixed(1)+';background:'+col(p.sym)+';min-width:4px" title="'+p.sym+' '+wt.toFixed(1)+'%"></div>';
-  }).join('');
-
-  return '<div id="share-card-el" style="background:linear-gradient(160deg,#0d1117 0%,#0a0e1a 50%,#0d1117 100%);border-radius:20px;padding:24px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;width:360px;position:relative;overflow:hidden">'
-    // glow blobs
-    +'<div style="position:absolute;top:-60px;right:-60px;width:180px;height:180px;background:radial-gradient(circle,rgba(59,130,246,0.18) 0%,transparent 70%);pointer-events:none"></div>'
-    +'<div style="position:absolute;bottom:-40px;left:-40px;width:140px;height:140px;background:radial-gradient(circle,'+(pl>=0?'rgba(16,185,129,0.14)':'rgba(239,68,68,0.14)')+' 0%,transparent 70%);pointer-events:none"></div>'
-
-    // header
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">'
-      +'<div style="display:flex;align-items:center;gap:7px">'
-        +'<div style="width:28px;height:28px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">📈</div>'
-        +'<div>'
-          +'<div style="font-size:11px;font-weight:700;color:#fff;letter-spacing:0.3px">Stock Tracker Pro</div>'
-          +'<div style="font-size:9px;color:rgba(255,255,255,0.3)">Portfolio Report</div>'
-        +'</div>'
-      +'</div>'
-      +'<div style="text-align:right">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.3)">'+dateStr+'</div>'
-        +'<div style="display:flex;align-items:center;gap:4px;justify-content:flex-end;margin-top:2px">'
-          +'<div style="width:5px;height:5px;border-radius:50%;background:#10b981"></div>'
-          +'<div style="font-size:9px;color:rgba(255,255,255,0.3)">Live</div>'
-        +'</div>'
-      +'</div>'
+  return '<div id="share-card-el" style="background:linear-gradient(135deg,#0a0e1a,#111827);border-radius:16px;padding:22px;font-family:system-ui,sans-serif">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">'
+      +'<div style="font-size:12px;font-weight:700;color:#3b82f6">📈 Stock Tracker Pro</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,0.35)">'+dateStr+'</div>'
     +'</div>'
-
-    // main value
     +'<div style="margin-bottom:18px">'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:6px">Portfolio Value</div>'
-      +'<div style="font-size:32px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1">$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'
-      +'<div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:3px">฿'+Math.round(totalVal*rate).toLocaleString('th-TH')+' <span style="color:rgba(255,255,255,0.15)">·</span> '+positions.length+' positions</div>'
-    +'</div>'
-
-    // stats row
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">'
-      +'<div style="background:'+plBg+';border:1px solid '+(pl>=0?'rgba(16,185,129,0.25)':'rgba(239,68,68,0.25)')+';border-radius:12px;padding:12px">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-bottom:4px">TOTAL P&L</div>'
-        +'<div style="font-size:18px;font-weight:800;color:'+plC+'">'+(pl>=0?'+':'')+pl.toFixed(0)+'$</div>'
-        +'<div style="font-size:11px;color:'+plC+';opacity:0.8">'+(plP>=0?'+':'')+plP.toFixed(2)+'%</div>'
+      +'<div style="font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px">มูลค่าพอร์ตรวม</div>'
+      +'<div style="display:flex;align-items:baseline;gap:8px">'
+        +'<div style="font-size:26px;font-weight:700;color:#fff">$'+totalVal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div>'
+        +'<div style="font-size:12px;font-weight:600;color:'+plC+';background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:20px">'+(plP>=0?'+':'')+plP.toFixed(2)+'%</div>'
       +'</div>'
-      +'<div style="background:'+todBg+';border:1px solid '+(todayPL>=0?'rgba(16,185,129,0.2)':'rgba(239,68,68,0.2)')+';border-radius:12px;padding:12px">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-bottom:4px">TODAY P&L</div>'
-        +'<div style="font-size:18px;font-weight:800;color:'+todC+'">'+(todayPL>=0?'+':'')+todayPL.toFixed(0)+'$</div>'
-        +'<div style="font-size:11px;color:'+todC+';opacity:0.8">vs yesterday</div>'
+      +'<div style="font-size:11px;color:rgba(255,255,255,0.3)">฿'+Math.round(totalVal*rate).toLocaleString('th-TH')+'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px">'
+      +'<div style="background:rgba(255,255,255,0.05);border-radius:9px;padding:9px">'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:3px">กำไรรวม</div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+plC+'">'+(pl>=0?'+':'')+pl.toFixed(0)+'$</div>'
+      +'</div>'
+      +'<div style="background:rgba(255,255,255,0.05);border-radius:9px;padding:9px">'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:3px">P&L วันนี้</div>'
+        +'<div style="font-size:13px;font-weight:700;color:'+todC+'">'+(todayPL>=0?'+':'')+todayPL.toFixed(0)+'$</div>'
+      +'</div>'
+      +'<div style="background:rgba(255,255,255,0.05);border-radius:9px;padding:9px">'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:3px">จำนวนหุ้น</div>'
+        +'<div style="font-size:13px;font-weight:700;color:#fff">'+positions.length+' ตัว</div>'
       +'</div>'
     +'</div>'
-
-    // allocation bar
-    +'<div style="margin-bottom:18px">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:7px">ALLOCATION</div>'
-      +'<div style="display:flex;height:6px;border-radius:6px;overflow:hidden;gap:1px">'+barHtml+'</div>'
-    +'</div>'
-
-    // holdings
-    +'<div style="margin-bottom:4px">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:12px">TOP HOLDINGS</div>'
-      +holdingsHtml
-    +'</div>'
-
-    // footer
-    +'<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:6px;display:flex;justify-content:space-between;align-items:center">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,0.18)">Long-term Investor · Not financial advice</div>'
+    +'<div style="margin-bottom:4px"><div style="font-size:10px;color:rgba(255,255,255,0.35);margin-bottom:8px">Top Holdings</div>'+holdingsHtml+'</div>'
+    +'<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:10px;display:flex;justify-content:space-between">'
+      +'<div style="font-size:9px;color:rgba(255,255,255,0.2)">Long-term Investor Edition</div>'
       +'<div style="display:flex;gap:3px">'
-        +'<div style="width:4px;height:4px;border-radius:50%;background:#3b82f6"></div>'
-        +'<div style="width:4px;height:4px;border-radius:50%;background:#10b981"></div>'
-        +'<div style="width:4px;height:4px;border-radius:50%;background:#f59e0b"></div>'
+        +'<div style="width:5px;height:5px;border-radius:50%;background:#3b82f6"></div>'
+        +'<div style="width:5px;height:5px;border-radius:50%;background:#10b981"></div>'
+        +'<div style="width:5px;height:5px;border-radius:50%;background:#f59e0b"></div>'
       +'</div>'
     +'</div>'
   +'</div>';
 }
 
 function buildStockCard(sym, dateStr, rate) {
-  var d   = sd[sym] || {};
-  var pos = positions.find(function(p){ return p.sym===sym; });
-  if(!pos) return '<div style="padding:20px;color:rgba(255,255,255,0.4)">ไม่พบข้อมูล '+sym+'</div>';
+  var d    = sd[sym] || {};
+  var pos  = positions.find(function(p){ return p.sym===sym; });
+  if (!pos) return '<div style="padding:20px;color:var(--text2)">ไม่พบข้อมูล '+sym+'</div>';
 
   var price  = d.price || 0;
-  var val    = price*pos.qty;
-  var cost   = pos.cost*pos.qty;
-  var pl     = val-cost;
-  var plP    = cost>0?(pl/cost)*100:0;
-  var plC    = pl>=0?'#10b981':'#ef4444';
-  var plBg   = pl>=0?'rgba(16,185,129,0.13)':'rgba(239,68,68,0.13)';
-  var plBd   = pl>=0?'rgba(16,185,129,0.25)':'rgba(239,68,68,0.25)';
-  var chgP   = d.chgP||0;
-  var chgC   = chgP>=0?'#10b981':'#ef4444';
-  var hi52   = d.hi52||null;
-  var lo52   = d.lo52||null;
+  var val    = price * pos.qty;
+  var cost   = pos.cost * pos.qty;
+  var pl     = val - cost;
+  var plP    = cost>0 ? (pl/cost)*100 : 0;
+  var plC    = pl>=0 ? '#10b981' : '#ef4444';
+  var chgP   = d.chgP || 0;
+  var chgC   = chgP>=0 ? '#10b981' : '#ef4444';
+  var hi52   = d.hi52 || null;
+  var lo52   = d.lo52 || null;
   var c      = col(sym);
-  var rangePct = (hi52&&lo52&&hi52>lo52)?((price-lo52)/(hi52-lo52))*100:null;
-  var dcaForSym= dcaEntries.filter(function(e){return e.sym===sym;});
-  var dcaCount = dcaForSym.length;
-  var avgDCA   = dcaCount>0?dcaForSym.reduce(function(s,e){return s+e.price*e.qty;},0)/dcaForSym.reduce(function(s,e){return s+e.qty;},0):null;
 
-  // sparkline from hd
-  var pts = (hd[sym]||[]).filter(function(v){return v!=null;});
-  var sparkSVG = '';
-  if(pts.length>1){
-    var mn=Math.min.apply(null,pts), mx=Math.max.apply(null,pts);
-    var range=mx-mn||1;
-    var W=312,H=48;
-    var coords=pts.map(function(v,i){
-      return [(i/(pts.length-1))*W, H-((v-mn)/range)*(H-6)+3];
-    });
-    var poly=coords.map(function(p){return p[0]+','+p[1];}).join(' ');
-    var fill=coords.map(function(p){return p[0]+','+p[1];}).join(' ')+' '+W+','+H+' 0,'+H;
-    sparkSVG='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:48px;display:block" preserveAspectRatio="none">'
-      +'<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+c+'" stop-opacity="0.3"/><stop offset="100%" stop-color="'+c+'" stop-opacity="0"/></linearGradient></defs>'
-      +'<polygon points="'+fill+'" fill="url(#sg)"/>'
-      +'<polyline points="'+poly+'" fill="none" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>'
-      +'</svg>';
-  }
+  // Progress bar ตำแหน่ง price ใน 52W range
+  var rangePct = (hi52&&lo52&&hi52>lo52) ? ((price-lo52)/(hi52-lo52))*100 : null;
 
-  return '<div id="share-card-el" style="background:linear-gradient(160deg,#0d1117 0%,#0a0e1a 50%,#0d1117 100%);border-radius:20px;padding:24px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;width:360px;position:relative;overflow:hidden">'
-    // glow
-    +'<div style="position:absolute;top:-50px;right:-50px;width:160px;height:160px;background:radial-gradient(circle,'+c+'30 0%,transparent 70%);pointer-events:none"></div>'
-    +'<div style="position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(59,130,246,0.1) 0%,transparent 70%);pointer-events:none"></div>'
+  // DCA history for this stock
+  var dcaForSym = dcaEntries.filter(function(e){ return e.sym===sym; });
+  var dcaCount  = dcaForSym.length;
+  var avgDCA    = dcaCount>0 ? dcaForSym.reduce(function(s,e){return s+e.price*e.qty;},0)/dcaForSym.reduce(function(s,e){return s+e.qty;},0) : null;
 
-    // header
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">'
-      +'<div style="display:flex;align-items:center;gap:10px">'
-        +scLogoImg(sym, c, 44)
+  return '<div id="share-card-el" style="background:linear-gradient(135deg,#0a0e1a,#111827);border-radius:16px;padding:22px;font-family:system-ui,sans-serif">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+        +'<div style="width:36px;height:36px;background:'+c+';border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">'+sym.slice(0,2)+'</div>'
         +'<div>'
-          +'<div style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px">'+sym+'</div>'
+          +'<div style="font-size:15px;font-weight:700;color:#fff">'+sym+'</div>'
           +'<div style="font-size:10px;color:rgba(255,255,255,0.35)">'+nam(sym)+'</div>'
         +'</div>'
       +'</div>'
       +'<div style="text-align:right">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.3)">'+dateStr+'</div>'
-        +'<div style="font-size:9px;color:#3b82f6;margin-top:2px">📈 Stock Tracker Pro</div>'
+        +'<div style="font-size:10px;color:rgba(255,255,255,0.35)">'+dateStr+'</div>'
+        +'<div style="font-size:10px;color:#3b82f6">📈 Stock Tracker Pro</div>'
       +'</div>'
     +'</div>'
 
-    // price
-    +'<div style="margin-bottom:14px">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,0.35);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:5px">Market Price</div>'
-      +'<div style="display:flex;align-items:baseline;gap:10px">'
-        +'<div style="font-size:30px;font-weight:800;color:#fff;letter-spacing:-1px">$'+price.toFixed(2)+'</div>'
-        +'<div style="font-size:12px;font-weight:700;color:'+chgC+';background:'+(chgP>=0?'rgba(16,185,129,0.15)':'rgba(239,68,68,0.15)')+';padding:3px 8px;border-radius:20px">'+(chgP>=0?'▲':'▼')+' '+(chgP>=0?'+':'')+chgP.toFixed(2)+'%</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">'
+      +'<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px">'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">ราคาตลาด</div>'
+        +'<div style="font-size:20px;font-weight:700;color:#fff">$'+price.toFixed(2)+'</div>'
+        +'<div style="font-size:11px;color:'+chgC+';margin-top:2px">'+(chgP>=0?'+':'')+chgP.toFixed(2)+'% วันนี้</div>'
       +'</div>'
-      +'<div style="font-size:10px;color:rgba(255,255,255,0.25);margin-top:2px">฿'+Math.round(price*rate).toLocaleString('th-TH')+'</div>'
-    +'</div>'
-
-    // sparkline
-    +(sparkSVG?'<div style="background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden;margin-bottom:14px;padding:8px 0 0">'+sparkSVG+'</div>':'')
-
-    // P&L + stats
-    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">'
-      +'<div style="background:'+plBg+';border:1px solid '+plBd+';border-radius:12px;padding:12px">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-bottom:4px">TOTAL P&L</div>'
-        +'<div style="font-size:17px;font-weight:800;color:'+plC+'">'+(pl>=0?'+':'')+pl.toFixed(2)+'$</div>'
-        +'<div style="font-size:11px;color:'+plC+';opacity:0.8">'+(plP>=0?'+':'')+plP.toFixed(2)+'%</div>'
-      +'</div>'
-      +'<div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px">'
-        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:0.5px;margin-bottom:4px">POSITION</div>'
-        +'<div style="font-size:17px;font-weight:800;color:#fff">$'+val.toFixed(0)+'</div>'
-        +'<div style="font-size:11px;color:rgba(255,255,255,0.35)">'+pos.qty+' shares</div>'
+      +'<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px">'
+        +'<div style="font-size:9px;color:rgba(255,255,255,0.4);margin-bottom:4px">กำไร/ขาดทุน</div>'
+        +'<div style="font-size:20px;font-weight:700;color:'+plC+'">'+(pl>=0?'+':'')+pl.toFixed(2)+'$</div>'
+        +'<div style="font-size:11px;color:'+plC+';margin-top:2px">'+(plP>=0?'+':'')+plP.toFixed(2)+'%</div>'
       +'</div>'
     +'</div>'
 
-    // details row
-    +'<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:11px 14px;margin-bottom:14px">'
+    +'<div style="background:rgba(255,255,255,0.04);border-radius:10px;padding:12px;margin-bottom:12px">'
       +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
-        +'<div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:3px">AVG COST</div><div style="font-size:12px;font-weight:700;color:#fff">$'+pos.cost.toFixed(2)+'</div></div>'
-        +(avgDCA?'<div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:3px">DCA AVG</div><div style="font-size:12px;font-weight:700;color:#60a5fa">$'+avgDCA.toFixed(2)+'</div></div>':'<div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:3px">MKT VAL</div><div style="font-size:12px;font-weight:700;color:#fff">$'+val.toFixed(0)+'</div></div>')
-        +(dcaCount>0?'<div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:3px">DCA ROUNDS</div><div style="font-size:12px;font-weight:700;color:#60a5fa">'+dcaCount+'x</div></div>':'<div><div style="font-size:8px;color:rgba(255,255,255,0.3);letter-spacing:0.5px;margin-bottom:3px">COST BASIS</div><div style="font-size:12px;font-weight:700;color:#fff">$'+cost.toFixed(0)+'</div></div>')
+        +'<div><div style="font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:2px">Avg Cost</div><div style="font-size:12px;font-weight:600;color:#fff">$'+pos.cost.toFixed(2)+'</div></div>'
+        +'<div><div style="font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:2px">จำนวน</div><div style="font-size:12px;font-weight:600;color:#fff">'+pos.qty.toFixed(4)+'</div></div>'
+        +'<div><div style="font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:2px">Market Val</div><div style="font-size:12px;font-weight:600;color:#fff">$'+val.toFixed(0)+'</div></div>'
       +'</div>'
     +'</div>'
 
-    // 52W range
-    +(rangePct!==null?'<div style="margin-bottom:14px">'
-      +'<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.3);margin-bottom:6px">'
-        +'<span>52W Low $'+lo52.toFixed(0)+'</span>'
-        +'<span style="color:rgba(255,255,255,0.5)">'+rangePct.toFixed(0)+'% of range</span>'
-        +'<span>52W High $'+hi52.toFixed(0)+'</span>'
+    +(rangePct!==null?'<div style="margin-bottom:12px">'
+      +'<div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:5px">'
+        +'<span>52W Lo $'+lo52.toFixed(0)+'</span><span>52W Hi $'+hi52.toFixed(0)+'</span>'
       +'</div>'
-      +'<div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;position:relative">'
-        +'<div style="height:100%;width:'+Math.min(Math.max(rangePct,0),100).toFixed(1)+'%;background:linear-gradient(90deg,'+c+'99,'+c+');border-radius:3px"></div>'
-        +'<div style="position:absolute;top:50%;left:'+Math.min(Math.max(rangePct,0),100).toFixed(1)+'%;transform:translate(-50%,-50%);width:11px;height:11px;background:'+c+';border-radius:50%;border:2px solid #0d1117;box-shadow:0 0 6px '+c+'88"></div>'
+      +'<div style="height:5px;background:rgba(255,255,255,0.08);border-radius:3px;position:relative">'
+        +'<div style="height:100%;width:'+rangePct.toFixed(1)+'%;background:'+c+';border-radius:3px"></div>'
+        +'<div style="position:absolute;top:-3px;left:'+rangePct.toFixed(1)+'%;transform:translateX(-50%);width:11px;height:11px;background:'+c+';border-radius:50%;border:2px solid #0a0e1a"></div>'
       +'</div>'
     +'</div>':'')
 
-    // footer
-    +'<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;display:flex;justify-content:space-between;align-items:center">'
-      +'<div style="font-size:9px;color:rgba(255,255,255,0.18)">Long-term Investor · Not financial advice</div>'
-      +'<div style="width:8px;height:8px;border-radius:50%;background:'+c+';box-shadow:0 0 6px '+c+'88"></div>'
+    +(dcaCount>0?'<div style="background:rgba(59,130,246,0.08);border:0.5px solid rgba(59,130,246,0.2);border-radius:9px;padding:9px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">'
+      +'<div><div style="font-size:9px;color:rgba(255,255,255,0.4)">DCA ทั้งหมด</div><div style="font-size:13px;font-weight:700;color:#60a5fa">'+dcaCount+' รอบ</div></div>'
+      +(avgDCA?'<div style="text-align:right"><div style="font-size:9px;color:rgba(255,255,255,0.4)">DCA avg cost</div><div style="font-size:13px;font-weight:700;color:#60a5fa">$'+avgDCA.toFixed(2)+'</div></div>':'')
+    +'</div>':'')
+
+    +'<div style="border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;display:flex;justify-content:space-between">'
+      +'<div style="font-size:9px;color:rgba(255,255,255,0.2)">Long-term Investor · Stock Tracker Pro</div>'
+      +'<div style="width:5px;height:5px;border-radius:50%;background:'+c+'"></div>'
     +'</div>'
   +'</div>';
 }
@@ -3671,15 +3499,6 @@ function exportHTML(){
   html = html.replace(
     /var FH='.*?', CL='.*?',/,
     "var FH='', CL='',"
-  );
-  // Reset inline styles ของ #app และ #setup ให้กลับสู่สถานะเริ่มต้น
-  html = html.replace(
-    /<div id="app" style="[^"]*">/,
-    '<div id="app" style="display:none">'
-  );
-  html = html.replace(
-    /<div id="setup" style="[^"]*">/,
-    '<div id="setup">'
   );
 
   var blob = new Blob([html], {type:'text/html;charset=utf-8'});
@@ -4212,7 +4031,7 @@ function sendChat(){
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{'Content-Type':'application/json','x-api-key':CL,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model:AI_MODEL,max_tokens:2000,system:systemPrompt,messages:messages})
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:600,system:systemPrompt,messages:messages})
   })
   .then(function(r){return r.json();})
   .then(function(d){
@@ -5610,27 +5429,42 @@ startApp = function() {
 </script>
 <script>
 // ── PWA — inline manifest + service worker ──
-// manifest.json loaded as static file
+(function(){
+  // Inline manifest
+  var manifest={
+    name:'Stock Tracker Pro',short_name:'StockPro',
+    start_url:'.',display:'standalone',
+    background_color:'#0a0e1a',theme_color:'#3b82f6',
+    description:'Long-term Investor Stock Tracker',
+    icons:[{src:'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>',sizes:'any',type:'image/svg+xml'}]
+  };
+  var blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var el=document.getElementById('manifest-placeholder');
+  if(el)el.href=url;
+})();
 
 if('serviceWorker' in navigator){
-  // Inline SW via data URL (same-origin workaround for Chrome PWA install)
-  var swCode='var CACHE="stp-v4";'
-    +'self.addEventListener("install",function(e){self.skipWaiting();});'
-    +'self.addEventListener("activate",function(e){'
-    +'  e.waitUntil(caches.keys().then(function(keys){'
-    +'    return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));'
-    +'  }));'
-    +'  return self.clients.claim();'
-    +'});'
-    +'self.addEventListener("fetch",function(e){'
-    +'  if(e.request.method!=="GET")return;'
-    +'  e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request)||new Response("Offline",{status:503});}));'
-    +'});';
-  // Use real sw.js file for proper Chrome PWA install support
+  // Inline service worker — cache-first for offline support
+  var swCode=[
+    'var CACHE="stp-v1";',
+    'self.addEventListener("install",function(e){self.skipWaiting();});',
+    'self.addEventListener("activate",function(e){',
+    '  e.waitUntil(caches.keys().then(function(keys){',
+    '    return Promise.all(keys.filter(function(k){return k!==CACHE;}).map(function(k){return caches.delete(k);}));',
+    '  }));',
+    '});',
+    'self.addEventListener("fetch",function(e){',
+    '  if(e.request.method!=="GET")return;',
+    '  e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));',
+    '});'
+  ].join('\n');
+  var swBlob=new Blob([swCode],{type:'application/javascript'});
+  var swUrl=URL.createObjectURL(swBlob);
   window.addEventListener('load',function(){
-    navigator.serviceWorker.register('./sw.js',{scope:'./'})
-      .then(function(reg){ console.log('SW registered:',reg.scope); })
-      .catch(function(e){ console.warn('SW failed:',e.message); });
+    navigator.serviceWorker.register(swUrl)
+      .then(function(){console.log('SW registered (inline)');})
+      .catch(function(e){console.log('SW skipped:',e.message);});
   });
 }
 
