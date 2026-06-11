@@ -16,7 +16,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:110%}
 
-body{font-family:var(--font);background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
 input,select,button{font-family:var(--font)}
 
 /* SETUP */
@@ -42,7 +42,7 @@ input,select,button{font-family:var(--font)}
 
 /* APP */
 #app{display:none}
-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:100;gap:10px;flex-wrap:wrap;flex-shrink:0}
+header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:10px;flex-wrap:wrap}
 .hl{display:flex;align-items:center;gap:10px}
 .ht{font-size:15px;font-weight:700}
 .hs{font-size:10px;color:var(--text3)}
@@ -71,8 +71,8 @@ header{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--acc);border-bottom-color:var(--acc)}
 
-main{flex:1;overflow:hidden;position:relative;padding:16px 20px;padding:0}
-.sec{display:none;position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px calc(100px + env(safe-area-inset-bottom,34px))}
+main{padding:16px 20px;max-width:1400px;margin:0 auto}
+.sec{display:none}
 .sec.active{display:block}
 .sec.tab-anim{animation:secIn .18s ease}
 @keyframes secIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
@@ -351,9 +351,8 @@ main{flex:1;overflow:hidden;position:relative;padding:16px 20px;padding:0}
 .mobnav-btn.active .icon{transform:scale(1.15);}
 @media(max-width:700px){
   .mobnav{display:flex;}
-  body{padding-bottom:0;}
-  main{padding-bottom:0;}
-  .sec.active{padding-bottom:0;}
+  body{padding-bottom:calc(90px + env(safe-area-inset-bottom, 34px));}
+  main{padding-bottom:calc(16px + env(safe-area-inset-bottom, 34px));}
   .tabs{display:none;}
   header{padding:8px 12px;gap:6px;}
   #ai-model-sel{display:none;}
