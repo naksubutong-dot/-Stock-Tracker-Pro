@@ -1,6 +1,6 @@
 <html lang="th" data-theme="dark"><head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#3b82f6">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -183,6 +183,27 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .dcal-pl.dn{color:var(--red)}
 .dcal-trades{font-size:9px;color:var(--text3);margin-top:3px}
 @media(max-width:500px){.dcal-cell{min-height:52px}.dcal-pl{font-size:11px}}
+/* ── DAY DETAIL MODAL ── */
+#dcal-day-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0);align-items:center;justify-content:center;padding:16px}
+#dcal-day-modal.open{display:flex;background:rgba(0,0,0,.6)}
+.dcal-dm{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:420px;max-height:88vh;overflow-y:auto;padding:20px;animation:modalIn .18s ease}
+.dcal-dm-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.dcal-dm-date{font-size:13px;color:var(--text3)}
+.dcal-dm-pl{font-size:28px;font-weight:800;line-height:1.1}
+.dcal-dm-close{background:var(--bg3);border:1px solid var(--border);color:var(--text3);width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.dcal-dm-close:hover{color:var(--text)}
+.dcal-dm-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.dcal-dm-stat{background:var(--bg3);border-radius:10px;padding:10px 12px}
+.dcal-dm-stat .dsl{font-size:10px;color:var(--text3);margin-bottom:3px}
+.dcal-dm-stat .dsv{font-size:14px;font-weight:700}
+.dcal-dm-sym-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.dcal-dm-sym-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.dcal-dm-sym-row:last-child{border-bottom:none}
+.dcal-dm-sym-bar-wrap{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.dcal-dm-sym-bar{height:100%;border-radius:2px;transition:width .4s ease}
+.dcal-dm-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px}
+.dcal-dm-badge.best{background:rgba(16,185,129,.15);color:var(--green)}
+.dcal-dm-badge.worst{background:rgba(239,68,68,.15);color:var(--red)}
 .pt{width:100%;border-collapse:collapse;background:var(--bg2);min-width:780px}
 .pt th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap}
 .pt td{padding:8px 14px;font-size:13px;border-bottom:1px solid var(--border);vertical-align:middle;line-height:1.35}
@@ -311,7 +332,7 @@ main{padding:16px 20px;max-width:1400px;margin:0 auto}
 .mobnav-btn.active .icon{transform:scale(1.15);}
 @media(max-width:700px){
   .mobnav{display:flex;}
-  body{padding-bottom:calc(68px + env(safe-area-inset-bottom));}
+  body{padding-bottom:calc(72px + env(safe-area-inset-bottom,20px));}
   main{padding-bottom:8px;}
   .tabs{display:none;}
   header{padding:8px 12px;gap:6px;}
@@ -603,6 +624,22 @@ body.privacy-mode .private:hover{filter:blur(6px)}
       <div class="aip" id="ai-port-panel" style="display:none;margin-top:14px">
         <div class="aihdr"><span style="font-size:16px">🤖</span><span class="ailbl">AI Portfolio Analysis</span></div>
         <div class="aibody" id="ai-port-body"></div>
+      </div>
+
+      <!-- DAY DETAIL MODAL -->
+      <div id="dcal-day-modal" onclick="if(event.target===this)closeDayDetail()">
+        <div class="dcal-dm">
+          <div class="dcal-dm-head">
+            <div>
+              <div class="dcal-dm-date" id="dcal-dm-date"></div>
+              <div class="dcal-dm-pl" id="dcal-dm-pl"></div>
+            </div>
+            <button class="dcal-dm-close" onclick="closeDayDetail()">✕</button>
+          </div>
+          <div class="dcal-dm-stats" id="dcal-dm-stats"></div>
+          <div class="dcal-dm-sym-title">P&amp;L รายหุ้น</div>
+          <div id="dcal-dm-syms"></div>
+        </div>
       </div>
 
       <!-- DAILY P&L CALENDAR -->
@@ -5873,16 +5910,34 @@ function _lastTradingDateKey() {
 
 function saveDailyPL() {
   if(!positions.length) return;
-  var totalPL = 0, hasDayData = false;
-  var totalVal = 0;
+  var totalPL = 0, totalVal = 0, hasDayData = false;
+  var symData = [];
+
   positions.forEach(function(p){
     var d = sd[p.sym];
-    if(d && d.price && d.chg != null){ totalPL += d.chg * p.qty; hasDayData = true; }
-    if(d && d.price) totalVal += d.price * p.qty;
+    if(!d || !d.price) return;
+    var symVal = parseFloat((d.price * p.qty).toFixed(2));
+    totalVal += d.price * p.qty;
+    if(d.chg != null){
+      var symPL  = parseFloat((d.chg * p.qty).toFixed(2));
+      var prevPx = d.price - d.chg;
+      var symPct = prevPx > 0 ? parseFloat((d.chg / prevPx * 100).toFixed(3)) : null;
+      totalPL += d.chg * p.qty;
+      hasDayData = true;
+      symData.push({ sym: p.sym, pl: symPL, pct: symPct, val: symVal });
+    }
   });
+
   if(!hasDayData) return;
   var key = _lastTradingDateKey();
-  _dailyPL[key] = { pl: parseFloat(totalPL.toFixed(2)), val: parseFloat(totalVal.toFixed(2)) };
+  var existing = _dailyPL[key] || {};
+  _dailyPL[key] = {
+    pl:   parseFloat(totalPL.toFixed(2)),
+    val:  parseFloat(totalVal.toFixed(2)),
+    syms: symData,
+    // ถ้ามี backfill val อยู่แล้วและ real-time ยังไม่ครบ ให้เก็บทั้งคู่
+    bval: existing.bval || null
+  };
   localStorage.setItem('stp4_dailypl', JSON.stringify(_dailyPL));
   renderDailyCalendar();
 }
@@ -6121,7 +6176,7 @@ function renderDailyCalendar() {
     if(rec) cls += ' has-data';
     if(isToday) cls += ' today';
     html += '<div class="'+cls+'"'
-      +(rec?' title="'+key+'"':'')+'>'
+      +(rec?' onclick="showDayDetail(\''+key+'\')"':'')+'>'
       +'<div class="dcal-day-num">'+day+'</div>';
     if(rec){
       var sign = rec.pl>=0?'+':'';
@@ -6140,6 +6195,139 @@ function renderDailyCalendar() {
   }
 
   grid.innerHTML = html;
+}
+
+// ── DAY DETAIL MODAL ──
+function closeDayDetail(){
+  var m=document.getElementById('dcal-day-modal');
+  m.style.transition='background .18s';
+  m.style.background='rgba(0,0,0,0)';
+  setTimeout(function(){m.classList.remove('open');m.style.background='';m.style.transition='';},190);
+}
+
+function showDayDetail(key){
+  var rec=_dailyPL[key];
+  if(!rec) return;
+
+  // หา key ของวันก่อนหน้า (trading day ก่อนหน้า)
+  var dates=Object.keys(_dailyPL).sort();
+  var idx=dates.indexOf(key);
+  var prevKey=idx>0?dates[idx-1]:null;
+  var prevRec=prevKey?_dailyPL[prevKey]:null;
+
+  // format วันที่ → แสดงเป็น Thai
+  var DAYS_TH=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+  var MONTHS_TH=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var dt=new Date(key+'T12:00:00');
+  var dateStr='วัน'+DAYS_TH[dt.getDay()]+' '+dt.getDate()+' '+MONTHS_TH[dt.getMonth()]+' '+(dt.getFullYear()+543);
+
+  // P&L หลัก
+  var pl=rec.pl, val=rec.val;
+  var plSign=pl>=0?'+':'';
+  var plColor=pl>=0?'var(--green)':'var(--red)';
+  var plPct=prevRec&&prevRec.val?(pl/prevRec.val*100):null;
+
+  document.getElementById('dcal-dm-date').textContent=dateStr;
+  var plEl=document.getElementById('dcal-dm-pl');
+  plEl.textContent=plSign+fp(pl)+(plPct!=null?' ('+(plPct>=0?'+':'')+plPct.toFixed(2)+'%)':'');
+  plEl.style.color=plColor;
+
+  // Stats grid
+  var valChg=prevRec&&prevRec.val?fp(val-prevRec.val):null;
+  var statsHtml='';
+
+  statsHtml+='<div class="dcal-dm-stat"><div class="dsl">มูลค่าพอร์ต</div>'
+    +'<div class="dsv">'+fp(val)+'</div></div>';
+
+  if(prevRec&&prevRec.val){
+    var chgAmt=val-prevRec.val;
+    var chgC=chgAmt>=0?'var(--green)':'var(--red)';
+    statsHtml+='<div class="dcal-dm-stat"><div class="dsl">เทียบวันก่อน ('+prevKey+')</div>'
+      +'<div class="dsv" style="color:'+chgC+'">'+(chgAmt>=0?'+':'')+fp(chgAmt)+'</div></div>';
+  }
+
+  // P&L รายหุ้น: ลำดับความสำคัญ
+  // 1) rec.syms  — บันทึกจริงจาก real-time (แม่นที่สุด)
+  // 2) isToday   — ดึงจาก sd live (วันนี้ยังไม่ได้ save ใหม่)
+  // 3) estimated — คำนวณจาก weight ปัจจุบัน (backfill)
+  var symRows=[];
+  var isToday=(key===_lastTradingDateKey());
+  var dataSource='';
+
+  if(rec.syms && rec.syms.length){
+    // มีข้อมูลรายหุ้นบันทึกไว้จริง
+    symRows=rec.syms;
+    dataSource='saved';
+  } else if(isToday && positions.length){
+    // วันนี้ ดึงจาก sd live
+    positions.forEach(function(p){
+      var d=sd[p.sym];
+      if(!d||d.chg==null) return;
+      var symPL=d.chg*p.qty;
+      var prevPx=d.price-d.chg;
+      var symPct=prevPx>0?(d.chg/prevPx*100):null;
+      symRows.push({sym:p.sym,pl:symPL,pct:symPct,val:d.price*p.qty});
+    });
+    dataSource='live';
+  } else {
+    // backfill — ประมาณจาก weight ปัจจุบัน
+    if(positions.length && val){
+      positions.forEach(function(p){
+        var d=sd[p.sym];
+        if(!d||!d.price) return;
+        var w=(d.price*p.qty)/val;
+        var estPL=pl*w;
+        symRows.push({sym:p.sym,pl:estPL,pct:null,val:d.price*p.qty,est:true});
+      });
+    }
+    dataSource='est';
+  }
+
+  // เรียงจากมากไปน้อยตาม |pl|
+  symRows.sort(function(a,b){return Math.abs(b.pl)-Math.abs(a.pl);});
+  var best=symRows.length?symRows.reduce(function(a,b){return b.pl>a.pl?b:a;},symRows[0]):null;
+  var worst=symRows.length?symRows.reduce(function(a,b){return b.pl<a.pl?b:a;},symRows[0]):null;
+
+  if(best) statsHtml+='<div class="dcal-dm-stat"><div class="dsl">🏆 ดีที่สุด</div>'
+    +'<div class="dsv" style="color:var(--green)">'+best.sym+' '+(best.pl>=0?'+':'')+fp(best.pl)+'</div></div>';
+  if(worst&&worst.sym!==best.sym) statsHtml+='<div class="dcal-dm-stat"><div class="dsl">💀 แย่ที่สุด</div>'
+    +'<div class="dsv" style="color:var(--red)">'+worst.sym+' '+fp(worst.pl)+'</div></div>';
+
+  document.getElementById('dcal-dm-stats').innerHTML=statsHtml;
+
+  // Symbol rows
+  var maxAbsPL=symRows.length?Math.max.apply(null,symRows.map(function(r){return Math.abs(r.pl);})):1;
+  var symsHtml='';
+  if(symRows.length===0){
+    symsHtml='<div style="font-size:12px;color:var(--text3);padding:12px 0">ไม่มีข้อมูลรายหุ้น</div>';
+  } else {
+    symRows.forEach(function(r){
+      var isBest=best&&r.sym===best.sym;
+      var isWorst=worst&&r.sym===worst.sym&&r.sym!==best.sym;
+      var barW=maxAbsPL>0?Math.round(Math.abs(r.pl)/maxAbsPL*100):0;
+      var barC=r.pl>=0?'var(--green)':'var(--red)';
+      var sign=r.pl>=0?'+':'';
+      symsHtml+='<div class="dcal-dm-sym-row">'
+        +'<div style="width:52px;font-size:12px;font-weight:700">'+r.sym+'</div>'
+        +'<div class="dcal-dm-sym-bar-wrap"><div class="dcal-dm-sym-bar" style="width:'+barW+'%;background:'+barC+'"></div></div>'
+        +'<div style="font-size:12px;font-weight:700;color:'+barC+';min-width:72px;text-align:right">'+sign+fp(r.pl)+'</div>'
+        +(r.pct!=null?'<div style="font-size:10px;color:var(--text3);min-width:50px;text-align:right">'+(r.pct>=0?'+':'')+r.pct.toFixed(2)+'%</div>':'')
+        +(isBest?'<span class="dcal-dm-badge best">Best</span>':isWorst?'<span class="dcal-dm-badge worst">Worst</span>':'<span style="width:40px"></span>')
+        +'</div>';
+    });
+    if(dataSource==='saved'){
+      symsHtml+='<div style="font-size:10px;color:var(--green);margin-top:8px">✓ ข้อมูลจริงจากวันนั้น</div>';
+    } else if(dataSource==='live'){
+      symsHtml+='<div style="font-size:10px;color:var(--acc);margin-top:8px">• ราคา live ปัจจุบัน</div>';
+    } else if(dataSource==='est'){
+      symsHtml+='<div style="font-size:10px;color:var(--text3);margin-top:8px">* ประมาณการจาก weight ปัจจุบัน (backfill)</div>';
+    }
+  }
+  document.getElementById('dcal-dm-syms').innerHTML=symsHtml;
+
+  // เปิด modal
+  var m=document.getElementById('dcal-day-modal');
+  m.classList.add('open');
 }
 
 // ── KEYBOARD SHORTCUTS ──
